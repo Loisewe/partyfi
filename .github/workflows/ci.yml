@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  PNPM_VERSION: '9.15.9'
+  NODE_VERSION: '22'
+
+jobs:
+  typecheck:
+    name: Type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @wishly/db exec prisma generate
+
+      - name: Type-check API
+        run: pnpm --filter @wishly/api exec tsc --noEmit
+
+      - name: Type-check Web
+        run: pnpm --filter @wishly/web exec tsc --noEmit
+        env:
+          # Web app needs envs at compile-time
+          NEXT_PUBLIC_API_URL: 'https://api.partyfi.app/api/v1'
+          NEXT_PUBLIC_SITE_URL: 'https://partyfi.app'
+
+      - name: Type-check Bot
+        run: pnpm --filter @wishly/bot exec tsc --noEmit -p tsconfig.build.json
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @wishly/db exec prisma generate
+
+      - name: Run tests
+        run: pnpm --filter @wishly/api test

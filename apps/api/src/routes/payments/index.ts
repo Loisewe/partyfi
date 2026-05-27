@@ -69,7 +69,9 @@ async function createTgInvoiceLink(args: {
 export const paymentRoutes: FastifyPluginAsync = async (app) => {
   // ── POST /events/:id/upgrade ────────────────────────────────────────────
   // Host requests TG Stars invoice for premium upgrade. Returns invoice URL.
-  app.post('/events/:id/upgrade', async (request, reply) => {
+  app.post('/events/:id/upgrade', {
+    config: { rateLimit: { max: 5, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const user = requireAuth(request)
     const { id: eventId } = request.params as { id: string }
 

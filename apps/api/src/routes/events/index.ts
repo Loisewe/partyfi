@@ -359,7 +359,9 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
   })
 
   // ── POST /events/:tokenOrSlug/rsvp ──────────────────────────────────────
-  app.post('/:tokenOrSlug/rsvp', async (request, reply) => {
+  app.post('/:tokenOrSlug/rsvp', {
+    config: { rateLimit: { max: 30, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { tokenOrSlug } = request.params as { tokenOrSlug: string }
     const body = createRsvpSchema.parse(request.body)
 

@@ -20,7 +20,9 @@ export const eventPhotoRoutes: FastifyPluginAsync = async (app) => {
 
   // ── POST /events/:id/photos ─────────────────────────────────────────────
   // Multipart upload from a guest. Returns the created photo.
-  app.post('/events/:id/photos', async (request, reply) => {
+  app.post('/events/:id/photos', {
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { id: eventId } = request.params as { id: string }
 
     const event = await app.prisma.event.findUnique({ where: { id: eventId } })
