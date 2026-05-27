@@ -66,6 +66,8 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
         pollQuestion: body.pollQuestion ?? null,
         pollOptions: body.pollOptions ?? undefined,
         agenda: body.agenda ?? undefined,
+        // On create: limit to 3 (free tier — event not yet premium)
+        externalLinks: body.externalLinks ? body.externalLinks.slice(0, 3) : undefined,
       },
       include: EVENT_INCLUDE,
     })
@@ -208,6 +210,21 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
         }
       }
       data.themeColor = body.themeColor
+    }
+    if (body.externalLinks !== undefined) {
+      // Free: 3 links, Premium: 10
+      if (body.externalLinks.length > 3) {
+        const upgrade = await app.prisma.eventUpgrade.findUnique({
+          where: { eventId: event.id },
+          select: { id: true },
+        })
+        if (!upgrade) {
+          return reply.status(402).send({
+            error: 'Free план — до 3 ссылок. Премиум — до 10.',
+          })
+        }
+      }
+      data.externalLinks = body.externalLinks
     }
     if (body.pin !== undefined) {
       data.pinHash = body.pin ? await bcrypt.hash(body.pin, 10) : null

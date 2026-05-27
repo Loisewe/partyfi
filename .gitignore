@@ -42,3 +42,4 @@ Thumbs.db
 # Misc dev artifacts
 .pnpm-debug.log
 *.local
+.gstack/

@@ -13,6 +13,7 @@ import { RecurrenceEditor } from '@/components/event/RecurrenceEditor'
 import { CoHostManager } from '@/components/event/CoHostManager'
 import { AnalyticsPanel } from '@/components/event/AnalyticsPanel'
 import { ThemeColorPicker } from '@/components/event/ThemeColorPicker'
+import { ExternalLinksHostEditor } from '@/components/event/ExternalLinksHostEditor'
 
 interface Props { tokenOrSlug: string }
 
@@ -191,6 +192,17 @@ export function HostDashboard({ tokenOrSlug }: Props) {
             </section>
           </>
         )}
+
+        {/* External links module — free 3, premium 10 */}
+        <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+          <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+            <span>🔗</span> Полезные ссылки
+            <span className="ml-auto text-xs font-medium text-ink-900/50">
+              {event.isPremium ? 'до 10' : 'до 3'}
+            </span>
+          </h2>
+          <ExternalLinksHostEditor event={event} onUpdated={load} />
+        </section>
 
         {/* Share */}
         <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">

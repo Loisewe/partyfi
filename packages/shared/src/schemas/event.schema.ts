@@ -27,6 +27,16 @@ export const themeColorSchema = z.enum([
 ])
 export type ThemeColor = z.infer<typeof themeColorSchema>
 
+export const externalLinkSchema = z.object({
+  emoji: z.string().max(8).optional().nullable(),
+  title: z.string().min(1).max(60),
+  url: z.string().url().max(2000),
+})
+export type ExternalLink = z.infer<typeof externalLinkSchema>
+
+// Server enforces premium cap (10 vs 3); base schema allows up to 10
+export const externalLinksSchema = z.array(externalLinkSchema).max(10)
+
 export const createEventSchema = z.object({
   title: z.string().min(1, 'Название обязательно').max(120),
   description: z.string().max(2000).optional(),
@@ -49,6 +59,8 @@ export const createEventSchema = z.object({
   agenda: agendaSchema.optional(),
   // Premium-only theme color (enforced server-side)
   themeColor: themeColorSchema.nullable().optional(),
+  // band.link-style external links — free 3, premium 10
+  externalLinks: externalLinksSchema.optional(),
 })
 
 export const updateEventSchema = createEventSchema.partial().extend({

@@ -9,6 +9,7 @@ import { useEventStream } from '@/lib/use-event-stream'
 import { eventsApi } from '@/lib/api-client'
 import { CoverImage } from '@/components/event/CoverImage'
 import { themeStyles } from '@/lib/event-theme'
+import { ExternalLinksList } from '@/components/event/ExternalLinksList'
 import { PhotoWall } from '@/components/event/PhotoWall'
 import { MapEmbed } from '@/components/event/MapEmbed'
 import { AgendaTimeline } from '@/components/event/AgendaTimeline'
@@ -244,6 +245,17 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
             visibility={event.rsvpVisibility}
           />
         </section>
+
+        {/* External links module (band.link-style) */}
+        {event.externalLinks && event.externalLinks.length > 0 && (
+          <section className="mt-10 animate-slide-up" style={{ animationDelay: '0.42s' }}>
+            <h2 className="font-display text-2xl font-bold text-ink-900 mb-4 flex items-center gap-2">
+              <span>🔗</span> Полезное
+              <span className="text-brand-500">{event.externalLinks.length}</span>
+            </h2>
+            <ExternalLinksList links={event.externalLinks} />
+          </section>
+        )}
 
         {/* Agenda timeline (if event has one) */}
         {event.agenda && event.agenda.length > 0 && (

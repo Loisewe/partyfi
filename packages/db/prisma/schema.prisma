@@ -361,6 +361,10 @@ model Event {
   // One of: 'rose' | 'violet' | 'emerald' | 'amber' | 'sky' | 'slate' | null
   themeColor String?
 
+  // band.link-style external links module — array of { emoji?, title, url }.
+  // Free tier: max 3 links. Premium tier: max 10 (enforced server-side).
+  externalLinks Json?
+
   rsvps     EventRsvp[]
   photos    EventPhoto[]
   reminders EventReminder[]

@@ -46,6 +46,8 @@ export interface PublicEvent {
   agenda: Array<{ time?: string | null; title: string; description?: string | null }> | null
   /** Premium-only theme color preset applied to gradient + accents */
   themeColor: 'rose' | 'violet' | 'emerald' | 'amber' | 'sky' | 'slate' | null
+  /** band.link-style external links shown as module on event page */
+  externalLinks: Array<{ emoji?: string | null; title: string; url: string }> | null
   createdAt: string
 }
 
