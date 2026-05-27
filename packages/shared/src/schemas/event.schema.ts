@@ -17,6 +17,16 @@ export const agendaItemSchema = z.object({
 export const agendaSchema = z.array(agendaItemSchema).max(30)
 export type AgendaItem = z.infer<typeof agendaItemSchema>
 
+export const themeColorSchema = z.enum([
+  'rose',
+  'violet',
+  'emerald',
+  'amber',
+  'sky',
+  'slate',
+])
+export type ThemeColor = z.infer<typeof themeColorSchema>
+
 export const createEventSchema = z.object({
   title: z.string().min(1, 'Название обязательно').max(120),
   description: z.string().max(2000).optional(),
@@ -37,6 +47,8 @@ export const createEventSchema = z.object({
   pollOptions: pollOptionsSchema.optional(),
   // Optional agenda
   agenda: agendaSchema.optional(),
+  // Premium-only theme color (enforced server-side)
+  themeColor: themeColorSchema.nullable().optional(),
 })
 
 export const updateEventSchema = createEventSchema.partial().extend({

@@ -12,6 +12,7 @@ import { ShareToStoryButton } from '@/components/event/ShareToStoryButton'
 import { RecurrenceEditor } from '@/components/event/RecurrenceEditor'
 import { CoHostManager } from '@/components/event/CoHostManager'
 import { AnalyticsPanel } from '@/components/event/AnalyticsPanel'
+import { ThemeColorPicker } from '@/components/event/ThemeColorPicker'
 
 interface Props { tokenOrSlug: string }
 
@@ -180,6 +181,13 @@ export function HostDashboard({ tokenOrSlug }: Props) {
                 <span>🔁</span> Повторение
               </h2>
               <RecurrenceEditor event={event} onUpdated={load} />
+            </section>
+
+            <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+              <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+                <span>🎨</span> Цветовая тема
+              </h2>
+              <ThemeColorPicker event={event} onUpdated={load} />
             </section>
           </>
         )}

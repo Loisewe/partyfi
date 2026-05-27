@@ -193,6 +193,21 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
     if (body.pollQuestion !== undefined)     data.pollQuestion = body.pollQuestion
     if (body.pollOptions !== undefined)      data.pollOptions = body.pollOptions
     if (body.agenda !== undefined)           data.agenda = body.agenda
+    if (body.themeColor !== undefined) {
+      // Premium-gate theme color
+      if (body.themeColor !== null) {
+        const upgrade = await app.prisma.eventUpgrade.findUnique({
+          where: { eventId: event.id },
+          select: { id: true },
+        })
+        if (!upgrade) {
+          return reply.status(402).send({
+            error: 'Цветовая тема доступна только для премиум-ивентов',
+          })
+        }
+      }
+      data.themeColor = body.themeColor
+    }
     if (body.pin !== undefined) {
       data.pinHash = body.pin ? await bcrypt.hash(body.pin, 10) : null
     }

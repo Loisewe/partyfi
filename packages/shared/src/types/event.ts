@@ -44,6 +44,8 @@ export interface PublicEvent {
   pollOptions: string[] | null
   /** Optional intra-event agenda (lectures, multi-band gigs, etc.) */
   agenda: Array<{ time?: string | null; title: string; description?: string | null }> | null
+  /** Premium-only theme color preset applied to gradient + accents */
+  themeColor: 'rose' | 'violet' | 'emerald' | 'amber' | 'sky' | 'slate' | null
   createdAt: string
 }
 

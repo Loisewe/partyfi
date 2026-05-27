@@ -37,15 +37,20 @@ function classifyCover(slug: string | null): { gradient: string; emoji: string }
 export function CoverImage({
   imageUrl,
   coverPresetSlug,
+  themeGradient,
   className = 'w-full h-48 rounded-2xl mb-6 overflow-hidden',
 }: {
   imageUrl: string | null
   coverPresetSlug: string | null
+  /** Optional override (Tailwind from-X to-Y string) when event has a premium themeColor */
+  themeGradient?: string
   className?: string
 }) {
   const [imgFailed, setImgFailed] = useState(false)
   const [imgLoaded, setImgLoaded] = useState(false)
-  const { gradient, emoji } = classifyCover(coverPresetSlug)
+  const classified = classifyCover(coverPresetSlug)
+  const gradient = themeGradient ?? classified.gradient
+  const emoji = classified.emoji
   const showImage = !!imageUrl && !imgFailed
 
   return (

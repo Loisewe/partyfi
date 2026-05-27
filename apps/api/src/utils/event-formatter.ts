@@ -75,6 +75,7 @@ export function formatPublicEvent(event: EventWithRelations): PublicEvent {
     agenda: Array.isArray((event as unknown as { agenda?: unknown }).agenda)
       ? ((event as unknown as { agenda: PublicEvent['agenda'] }).agenda)
       : null,
+    themeColor: ((event as unknown as { themeColor?: PublicEvent['themeColor'] }).themeColor ?? null) as PublicEvent['themeColor'],
     createdAt: event.createdAt.toISOString(),
   }
 }

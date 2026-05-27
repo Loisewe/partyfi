@@ -357,6 +357,10 @@ model Event {
   // Useful for lectures, courses, conferences, multi-band gigs.
   agenda Json?
 
+  // Premium-only: theme color preset applied to event page accents/gradient.
+  // One of: 'rose' | 'violet' | 'emerald' | 'amber' | 'sky' | 'slate' | null
+  themeColor String?
+
   rsvps     EventRsvp[]
   photos    EventPhoto[]
   reminders EventReminder[]

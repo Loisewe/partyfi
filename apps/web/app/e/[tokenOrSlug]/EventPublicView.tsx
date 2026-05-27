@@ -8,6 +8,7 @@ import { GuestList } from './GuestList'
 import { useEventStream } from '@/lib/use-event-stream'
 import { eventsApi } from '@/lib/api-client'
 import { CoverImage } from '@/components/event/CoverImage'
+import { themeStyles } from '@/lib/event-theme'
 import { PhotoWall } from '@/components/event/PhotoWall'
 import { MapEmbed } from '@/components/event/MapEmbed'
 import { AgendaTimeline } from '@/components/event/AgendaTimeline'
@@ -105,8 +106,14 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
     }
   }
 
+  const theme = themeStyles(event.themeColor)
+
   return (
-    <main className="relative bg-gradient-to-b from-cream-50 via-white to-white min-h-screen pb-16">
+    <main
+      className={`relative min-h-screen pb-16 ${
+        theme.pageBg || 'bg-gradient-to-b from-cream-50 via-white to-white'
+      }`}
+    >
       {/* Hero blob backdrop */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] hero-blob pointer-events-none" aria-hidden />
 
@@ -116,6 +123,7 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
           <CoverImage
             imageUrl={event.coverImageUrl}
             coverPresetSlug={event.coverPresetSlug}
+            themeGradient={theme.coverGradient}
             className="w-full aspect-[16/10] sm:aspect-[2/1] rounded-3xl sm:rounded-4xl shadow-lifted overflow-hidden"
           />
           {event.isPremium && (
