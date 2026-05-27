@@ -7,6 +7,8 @@ import { eventsApi } from '@/lib/api-client'
 import { useEventStream } from '@/lib/use-event-stream'
 import { UpgradeButton } from '@/components/event/UpgradeButton'
 import { CustomSlugEditor } from '@/components/event/CustomSlugEditor'
+import { DuplicateEventButton } from '@/components/event/DuplicateEventButton'
+import { ShareToStoryButton } from '@/components/event/ShareToStoryButton'
 
 interface Props { tokenOrSlug: string }
 
@@ -166,7 +168,11 @@ export function HostDashboard({ tokenOrSlug }: Props) {
               {copied ? '✓ Скопировано' : 'Копировать'}
             </button>
           </div>
-          <p className="text-xs text-ink-900/50 mt-2">
+          <div className="mt-3 flex flex-wrap gap-2">
+            <ShareToStoryButton tokenOrSlug={tokenOrSlug} eventTitle={event.title} />
+            <DuplicateEventButton event={event} />
+          </div>
+          <p className="text-xs text-ink-900/50 mt-3">
             {event.hasPinProtection ? '🔒 PIN-защита включена' : 'Без PIN — открыто по ссылке'}
             {' · '}Обновления в реальном времени
           </p>

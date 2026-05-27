@@ -151,6 +151,14 @@ export const eventsApi = {
     return api.get('/events/mine')
   },
 
+  async duplicate(
+    id: string,
+    input: { startsAt?: string; title?: string },
+    opts?: EventHeaders,
+  ): Promise<{ event: OwnerEvent; editToken?: string }> {
+    return requestWithHeaders(`/events/${id}/duplicate`, 'POST', input, buildEventHeaders(opts))
+  },
+
   icalUrl(tokenOrSlug: string): string {
     return `${API_BASE}/events/${tokenOrSlug}/ical`
   },

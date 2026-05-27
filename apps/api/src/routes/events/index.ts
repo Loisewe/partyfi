@@ -263,6 +263,73 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
     return formatOwnerEvent(updated)
   })
 
+  // ── POST /events/:id/duplicate ──────────────────────────────────────────
+  // Clone an existing event into a new one. Caller can provide a new
+  // startsAt; everything else copies from the source. Host-only.
+  app.post('/:id/duplicate', async (request, reply) => {
+    const { id } = request.params as { id: string }
+    const body = (request.body ?? {}) as {
+      startsAt?: string
+      title?: string
+    }
+
+    const src = await app.prisma.event.findUnique({ where: { id } })
+    if (!src) return reply.status(404).send({ error: 'Event not found' })
+
+    const isHost =
+      request.auth.editToken === src.editToken ||
+      request.auth.user?.id === src.hostUserId
+    if (!isHost) return reply.status(403).send({ error: 'Access denied' })
+
+    // New event inherits everything except IDs, premium status, slug, PIN
+    const newStartsAt = body.startsAt
+      ? new Date(body.startsAt)
+      : (() => {
+          // default: same day next year
+          const d = new Date(src.startsAt)
+          d.setFullYear(d.getFullYear() + 1)
+          return d
+        })()
+
+    const newEndsAt = src.endsAt
+      ? (() => {
+          const diff = src.endsAt.getTime() - src.startsAt.getTime()
+          return new Date(newStartsAt.getTime() + diff)
+        })()
+      : null
+
+    const created = await app.prisma.event.create({
+      data: {
+        hostUserId: src.hostUserId,
+        title: body.title ?? src.title,
+        description: src.description,
+        startsAt: newStartsAt,
+        endsAt: newEndsAt,
+        timezone: src.timezone,
+        location: src.location,
+        locationLink: src.locationLink,
+        coverImageUrl: src.coverImageUrl,
+        coverPresetId: src.coverPresetId,
+        wishlistId: src.wishlistId,
+        rsvpVisibility: src.rsvpVisibility,
+        remindersEnabled: src.remindersEnabled,
+        // DO NOT copy: pinHash, customSlug, upgrade, shareToken, editToken
+      },
+      include: EVENT_INCLUDE,
+    })
+
+    // Schedule reminders for the new event
+    scheduleEventReminders(app.prisma, created).catch((err) =>
+      app.log.error({ err: err.message, eventId: created.id }, '[reminders] schedule failed'),
+    )
+
+    reply.status(201)
+    return {
+      event: formatOwnerEvent(created),
+      editToken: request.auth.user ? undefined : created.editToken,
+    }
+  })
+
   // ── POST /events/:tokenOrSlug/rsvp ──────────────────────────────────────
   app.post('/:tokenOrSlug/rsvp', async (request, reply) => {
     const { tokenOrSlug } = request.params as { tokenOrSlug: string }
