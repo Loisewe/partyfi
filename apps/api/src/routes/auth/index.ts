@@ -51,6 +51,64 @@ function verifyTelegramInitData(
 
 export const authRoutes: FastifyPluginAsync = async (app) => {
 
+  // ── POST /bot/my-events ──────────────────────────────────────────────────
+  // Bot-only endpoint (HMAC via BOT_WEBHOOK_SECRET). Returns hosted + invited
+  // events for a Telegram user. Used by /myevents bot command.
+  app.post('/bot/my-events', async (request, reply) => {
+    const callerSecret = request.headers['x-bot-secret']
+    const expected = process.env.BOT_WEBHOOK_SECRET ?? process.env.JWT_SECRET
+    if (!expected || callerSecret !== expected) {
+      return reply.status(401).send({ error: 'Unauthorized' })
+    }
+
+    const { telegramId } = request.body as { telegramId?: string }
+    if (!telegramId) return reply.status(400).send({ error: 'telegramId required' })
+
+    const user = await app.prisma.user.findUnique({
+      where: { telegramId },
+      select: { id: true },
+    })
+    if (!user) return { hosted: [], invited: [] }
+
+    const [hosted, invited] = await Promise.all([
+      app.prisma.event.findMany({
+        where: { hostUserId: user.id, status: 'ACTIVE' },
+        select: { id: true, title: true, shareToken: true, startsAt: true },
+        orderBy: { startsAt: 'asc' },
+        take: 10,
+      }),
+      app.prisma.event.findMany({
+        where: {
+          rsvps: { some: { guestUserId: user.id, status: 'GOING' } },
+          status: 'ACTIVE',
+        },
+        select: {
+          id: true,
+          title: true,
+          shareToken: true,
+          startsAt: true,
+          host: { select: { name: true, nickname: true } },
+        },
+        orderBy: { startsAt: 'asc' },
+        take: 10,
+      }),
+    ])
+
+    return {
+      hosted: hosted.map((e) => ({
+        title: e.title,
+        shareToken: e.shareToken,
+        startsAt: e.startsAt.toISOString(),
+      })),
+      invited: invited.map((e) => ({
+        title: e.title,
+        shareToken: e.shareToken,
+        startsAt: e.startsAt.toISOString(),
+        hostName: e.host.name ?? e.host.nickname ?? 'хост',
+      })),
+    }
+  })
+
   // ── POST /auth/telegram-init ────────────────────────────────────────────
   // Verifies Telegram WebApp initData, upserts user by telegramId, returns JWT.
 

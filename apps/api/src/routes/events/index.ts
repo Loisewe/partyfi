@@ -17,6 +17,7 @@ import {
 } from '../../utils/event-formatter'
 import { publishEventEvent } from '../sse'
 import { scheduleEventReminders, clearEventReminders } from '../../services/reminders.service'
+import { notifyHostOnRsvp } from '../../services/host-notifications.service'
 import { scheduleAutoClone } from '../../services/auto-clone.service'
 
 const EVENT_INCLUDE = {
@@ -440,6 +441,11 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
       rsvpId: rsvp.id,
       status: rsvp.status,
     })
+
+    // Fire-and-forget DM to host (skipped silently if no TG token / no host.telegramId)
+    notifyHostOnRsvp(app.prisma, rsvp).catch((err) =>
+      app.log.error({ err: err.message, eventId: event.id }, '[notifications] DM host failed'),
+    )
 
     return {
       rsvp: {

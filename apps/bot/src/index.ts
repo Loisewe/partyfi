@@ -13,8 +13,65 @@ if (!BOT_TOKEN) {
 }
 
 const WEB_URL = process.env.WEB_URL ?? 'https://partyfi.app'
+const API_URL = process.env.API_URL ?? 'http://localhost:3001/api/v1'
+const BOT_WEBHOOK_SECRET = process.env.BOT_WEBHOOK_SECRET ?? process.env.JWT_SECRET ?? 'dev-secret'
 
 const bot = new Bot(BOT_TOKEN)
+
+// ── /myevents — list user's events ─────────────────────────────────────────
+
+bot.command('myevents', async (ctx) => {
+  const tgId = ctx.from?.id
+  if (!tgId) return ctx.reply('Не вижу твоего TG ID — попробуй ещё раз')
+
+  try {
+    const res = await fetch(`${API_URL}/auth/bot/my-events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-bot-secret': BOT_WEBHOOK_SECRET,
+      },
+      body: JSON.stringify({ telegramId: String(tgId) }),
+    })
+    if (!res.ok) throw new Error(`api ${res.status}`)
+    const data = (await res.json()) as {
+      hosted: Array<{ title: string; shareToken: string; startsAt: string }>
+      invited: Array<{ title: string; shareToken: string; startsAt: string; hostName: string }>
+    }
+
+    if (data.hosted.length === 0 && data.invited.length === 0) {
+      await ctx.reply(
+        'У тебя пока нет активных ивентов 🍃\n\n' +
+          `Создать → ${WEB_URL}/create-event`,
+      )
+      return
+    }
+
+    const fmt = (iso: string) =>
+      new Date(iso).toLocaleString('ru-RU', { dateStyle: 'long', timeStyle: 'short' })
+
+    let text = ''
+    if (data.hosted.length > 0) {
+      text += '*Хостишь:*\n'
+      for (const e of data.hosted) {
+        text += `• ${escMd(e.title)} — ${escMd(fmt(e.startsAt))}\n`
+      }
+      text += '\n'
+    }
+    if (data.invited.length > 0) {
+      text += '*Идёшь к:*\n'
+      for (const e of data.invited) {
+        text += `• ${escMd(e.title)} \\(от ${escMd(e.hostName)}\\) — ${escMd(fmt(e.startsAt))}\n`
+      }
+    }
+
+    const keyboard = new InlineKeyboard().webApp('📱 Открыть в Mini App', `${WEB_URL}/dashboard`)
+    await ctx.reply(text, { parse_mode: 'MarkdownV2', reply_markup: keyboard })
+  } catch (err) {
+    console.error('[bot] /myevents failed:', err)
+    await ctx.reply('Что-то сломалось, попробуй позже 🙏')
+  }
+})
 
 // ── /start ─────────────────────────────────────────────────────────────────
 // Handles both plain /start and deep links: /start view_SHARETOKEN

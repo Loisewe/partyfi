@@ -3,6 +3,7 @@ import { Inter, Manrope } from 'next/font/google'
 import './globals.css'
 import { Providers } from './providers'
 import { ToastProvider } from '@/components/ui/Toast'
+import { ServiceWorkerRegister } from '@/components/ServiceWorkerRegister'
 
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </ToastProvider>
         </Providers>
+        <ServiceWorkerRegister />
       </body>
     </html>
   )
