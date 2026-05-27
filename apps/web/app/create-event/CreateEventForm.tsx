@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { TemplatePicker } from '@/components/event/TemplatePicker'
+import type { EventTemplate } from '@/lib/event-templates'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { z } from 'zod'
@@ -42,10 +44,29 @@ export function CreateEventForm() {
   const [pollOptions, setPollOptions] = useState<string[]>([])
   const [agenda, setAgenda] = useState<Array<{ time?: string | null; title: string; description?: string | null }>>([])
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  const [templatePicked, setTemplatePicked] = useState(false)
+  const [titlePlaceholder, setTitlePlaceholder] = useState('День рождения Ани')
+
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { rsvpHostOnly: false },
   })
+
+  function applyTemplate(template: EventTemplate) {
+    setTemplatePicked(true)
+    const d = template.defaults
+    if (d.titlePlaceholder) setTitlePlaceholder(d.titlePlaceholder)
+    if (d.descriptionDefault) setValue('description', d.descriptionDefault)
+    if (d.pollQuestion) setPollQuestion(d.pollQuestion)
+    if (d.pollOptions) setPollOptions(d.pollOptions)
+    if (d.agendaDefault) {
+      setAgenda(d.agendaDefault.map((a) => ({
+        time: a.time ?? null,
+        title: a.title,
+        description: a.description ?? null,
+      })))
+    }
+  }
 
   async function onSubmit(data: FormValues) {
     setIsSubmitting(true)
@@ -96,13 +117,23 @@ export function CreateEventForm() {
   const labelClass = 'block text-xs font-bold uppercase tracking-widest text-ink-900/60 mb-1.5'
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div className="space-y-6">
+      {!templatePicked && (
+        <div className="rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+          <TemplatePicker
+            onPick={applyTemplate}
+            onSkip={() => setTemplatePicked(true)}
+          />
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
         <label className={labelClass}>Название *</label>
         <input
           {...register('title')}
           className={`${inputClass} font-display text-lg font-semibold`}
-          placeholder="День рождения Ани"
+          placeholder={titlePlaceholder}
         />
         {errors.title && <p className="text-rose-600 text-sm mt-1.5">{errors.title.message}</p>}
       </div>
@@ -218,6 +249,7 @@ export function CreateEventForm() {
       >
         {isSubmitting ? 'Создаём…' : 'Создать ивент →'}
       </button>
-    </form>
+      </form>
+    </div>
   )
 }
