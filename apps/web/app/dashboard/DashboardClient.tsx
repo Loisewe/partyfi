@@ -55,12 +55,15 @@ export function DashboardClient({ wishlists: initial, user }: Props) {
   const displayName = user.name?.split(' ')[0] ?? 'Аноним'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gradient-to-b from-cream-50 via-white to-white">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] hero-blob pointer-events-none" aria-hidden />
+
       {/* Header */}
-      <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="relative border-b border-gray-100 bg-white/70 backdrop-blur-md sticky top-0 z-10">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-          <Link href="/" className="text-xl font-extrabold text-brand-500">
-            Partyfi
+          <Link href="/" className="flex items-center gap-1.5 group">
+            <span className="inline-block w-7 h-7 rounded-lg bg-gradient-celebratory shadow-sm group-hover:scale-105 transition" aria-hidden />
+            <span className="font-display text-xl font-extrabold text-ink-900 tracking-tight">Partyfi</span>
           </Link>
           <div className="flex items-center gap-3">
             {user.image && (
@@ -85,20 +88,30 @@ export function DashboardClient({ wishlists: initial, user }: Props) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 py-8">
+      <main className="relative mx-auto max-w-4xl px-4 py-8 sm:py-12">
         {/* Welcome */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-10 flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900">
-              Привет, {displayName}! 👋
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">
+              Твой кабинет
+            </p>
+            <h1 className="font-display text-display-md text-ink-900">
+              Привет,{' '}
+              <span className="bg-gradient-celebratory bg-clip-text text-transparent">
+                {displayName}
+              </span>
+              !
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-2 text-ink-900/60">
               {wishlists.length === 0
-                ? 'Создай первый вишлист и поделись с друзьями'
-                : `У тебя ${wishlists.length} ${wishlistsWord(wishlists.length)}`}
+                ? 'Создай первый вишлист или ивент — поделись ссылкой за минуту'
+                : `${wishlists.length} ${wishlistsWord(wishlists.length)} в коллекции`}
             </p>
           </div>
-          <CreateWishlistButton />
+          <div className="flex items-center gap-2">
+            <Link href="/create-event" className="pill-brand">🎉 Ивент</Link>
+            <CreateWishlistButton />
+          </div>
         </div>
 
         {/* My events */}
@@ -252,15 +265,27 @@ function MyEventsSection() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return null
+  if (loading) {
+    return (
+      <div className="mb-10">
+        <div className="grid gap-3 sm:grid-cols-2">
+          {[0, 1].map((i) => (
+            <div key={i} className="h-32 skeleton rounded-3xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   if (events.length === 0) {
     return (
-      <div className="mb-8 rounded-2xl border border-dashed border-gray-200 p-6 text-center">
-        <p className="text-sm text-gray-500 mb-3">У тебя пока нет ивентов</p>
-        <Link
-          href="/create-event"
-          className="inline-flex items-center justify-center rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white hover:opacity-90 transition"
-        >
+      <div className="mb-10 rounded-3xl border-2 border-dashed border-gray-200 p-8 text-center">
+        <div className="text-4xl mb-3">🎉</div>
+        <p className="font-display text-lg font-bold text-ink-900 mb-1">Пока ни одного ивента</p>
+        <p className="text-sm text-ink-900/60 mb-5 max-w-sm mx-auto">
+          Создай первую красивую карточку для дня рождения, новоселья или просто посиделок
+        </p>
+        <Link href="/create-event" className="pill-brand">
           🎉 Создать ивент
         </Link>
       </div>
@@ -268,31 +293,61 @@ function MyEventsSection() {
   }
 
   return (
-    <div className="mb-10">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-900">Мои ивенты</h2>
-        <Link href="/create-event" className="text-sm font-medium text-brand-500 hover:underline">
+    <div className="mb-12">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="font-display text-2xl font-bold text-ink-900">
+          Мои ивенты <span className="text-brand-500">{events.length}</span>
+        </h2>
+        <Link href="/create-event" className="text-sm font-semibold text-brand-500 hover:underline">
           + новый
         </Link>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 stagger-parent">
         {events.map((e) => {
           const url = `/e/${e.customSlug ?? e.shareToken}`
-          const startsAt = new Date(e.startsAt).toLocaleString('ru-RU', {
-            dateStyle: 'medium', timeStyle: 'short',
-          })
+          const startsAt = new Date(e.startsAt)
+          const isPast = startsAt.getTime() < Date.now()
+          const dateStr = startsAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+          const timeStr = startsAt.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+          const goingTotal = e.rsvpStats.going + e.rsvpStats.plusOnesTotal
           return (
             <Link
               key={e.id}
               href={url}
-              className="block rounded-2xl bg-white p-4 ring-1 ring-gray-100 hover:ring-gray-200 hover:shadow-sm transition"
+              className="group relative rounded-3xl bg-white border border-gray-100 shadow-soft hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-300 overflow-hidden"
             >
-              <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">{e.title}</h3>
-              <p className="text-xs text-gray-500 mb-2">{startsAt}</p>
-              <p className="text-xs text-gray-600">
-                {e.rsvpStats.going} идут · {e.rsvpStats.maybe} может быть
-                {e.status === 'CANCELLED' && <span className="text-red-600 ml-1">· отменён</span>}
-              </p>
+              <div className="flex items-stretch">
+                <div className="relative w-24 sm:w-32 shrink-0">
+                  <DashboardCover slug={(e as any).coverPresetSlug ?? null} url={e.coverImageUrl} />
+                </div>
+                <div className="flex-1 p-4 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-display font-bold text-ink-900 line-clamp-1 flex-1 min-w-0">
+                      {e.title}
+                    </h3>
+                    {(e as any).isPremium && (
+                      <span className="text-[10px] font-bold rounded-full bg-amber-100 text-amber-900 px-1.5 py-0.5 shrink-0">⭐</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-ink-900/60 mb-2">
+                    {dateStr} · {timeStr}
+                    {isPast && <span className="ml-1 text-ink-900/40">(прошёл)</span>}
+                  </p>
+                  <div className="flex items-center gap-1.5 text-xs text-ink-900/70">
+                    <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 font-semibold">
+                      {goingTotal} 🎉
+                    </span>
+                    {e.rsvpStats.maybe > 0 && (
+                      <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 font-semibold">
+                        {e.rsvpStats.maybe} 🤔
+                      </span>
+                    )}
+                    {e.status === 'CANCELLED' && (
+                      <span className="rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 font-semibold">отменён</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </Link>
           )
         })}
@@ -301,13 +356,53 @@ function MyEventsSection() {
   )
 }
 
+function DashboardCover({ slug, url }: { slug: string | null; url: string | null }) {
+  const gradients: Record<string, string> = {
+    birthday: 'from-pink-300 to-yellow-200',
+    housewarming: 'from-emerald-200 to-teal-300',
+    party: 'from-violet-300 to-fuchsia-300',
+    wedding: 'from-rose-200 to-amber-100',
+    'baby-shower': 'from-sky-200 to-pink-200',
+  }
+  const emojis: Record<string, string> = {
+    birthday: '🎂', housewarming: '🏠', party: '🎉', wedding: '💍', 'baby-shower': '👶',
+  }
+
+  let g = 'from-slate-200 to-slate-100'
+  let e = '🎁'
+  if (slug) {
+    for (const k of Object.keys(gradients)) {
+      if (slug.startsWith(k)) {
+        g = gradients[k]!
+        e = emojis[k] ?? '🎁'
+        break
+      }
+    }
+  }
+  return (
+    <div className={`relative w-full h-full bg-gradient-to-br ${g} flex items-center justify-center`}>
+      <span className="text-3xl sm:text-4xl">{e}</span>
+      {url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-200"
+          onLoad={(ev) => (ev.currentTarget.style.opacity = '1')}
+          onError={(ev) => ev.currentTarget.remove()}
+        />
+      )}
+    </div>
+  )
+}
+
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-gray-200 py-20 text-center">
       <div className="mb-4 text-6xl">🎁</div>
-      <h2 className="text-xl font-bold text-gray-900">Список пуст</h2>
-      <p className="mt-2 max-w-xs text-sm text-gray-400">
-        Создай первый вишлист — это займёт 30 секунд
+      <h2 className="font-display text-2xl font-bold text-ink-900">Вишлистов пока нет</h2>
+      <p className="mt-2 max-w-xs text-sm text-ink-900/60">
+        Создай первый — добавляй товары по ссылке за 30 секунд
       </p>
       <div className="mt-6">
         <CreateWishlistButton />

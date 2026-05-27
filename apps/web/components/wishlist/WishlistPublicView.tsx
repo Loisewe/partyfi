@@ -7,6 +7,8 @@ import type { Wishlist, WishlistItem, PublicReservation } from '@wishly/shared'
 import { formatPrice } from '@wishly/shared'
 import { ReserveButton } from './ReserveButton'
 import { useWishlistEvents, type WishlistEvent } from '@/lib/hooks/useWishlistEvents'
+import { Avatar } from '@/components/ui/Avatar'
+import { useToast } from '@/components/ui/Toast'
 
 interface Props {
   wishlist: Wishlist
@@ -14,6 +16,7 @@ interface Props {
 }
 
 export function WishlistPublicView({ wishlist: initial, shareToken }: Props) {
+  const toast = useToast()
   const [wishlist, setWishlist] = useState(initial)
   // Handle real-time SSE events
   const handleEvent = useCallback((event: WishlistEvent) => {
@@ -53,82 +56,87 @@ export function WishlistPublicView({ wishlist: initial, shareToken }: Props) {
       ? window.location.href
       : `https://partyfi.app/w/${shareToken}`
 
-  function handleShare() {
-    if (navigator.share) {
-      navigator.share({
-        title: wishlist.name,
-        text: `Загляни в мой вишлист: ${wishlist.name}`,
-        url: shareUrl,
-      })
-    } else {
-      navigator.clipboard.writeText(shareUrl)
-      // TODO: show toast
+  async function handleShare() {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: wishlist.name,
+          text: `Загляни в мой вишлист: ${wishlist.name}`,
+          url: shareUrl,
+        })
+        return
+      } catch {
+        // cancelled
+        return
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.show('Ссылка скопирована', 'success')
+    } catch {
+      // noop
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="relative min-h-screen bg-gradient-to-b from-cream-50 via-white to-white">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] hero-blob pointer-events-none" aria-hidden />
+
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <header className="relative bg-white/70 backdrop-blur-md border-b border-gray-100 sticky top-0 z-10">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
-          <Link href="/" className="text-lg font-bold text-brand-500">
-            Partyfi
+          <Link href="/" className="flex items-center gap-1.5 group">
+            <span className="inline-block w-7 h-7 rounded-lg bg-gradient-celebratory shadow-sm group-hover:scale-105 transition" aria-hidden />
+            <span className="font-display text-lg font-extrabold text-ink-900 tracking-tight">Partyfi</span>
           </Link>
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-xl bg-brand-50 px-3 py-1.5 text-sm font-medium text-brand-600 hover:bg-brand-100 transition"
-          >
-            <span>Поделиться</span>
+          <button onClick={handleShare} className="pill-secondary text-xs px-3 py-1.5">
+            📤 Поделиться
           </button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-8">
+      <main className="relative mx-auto max-w-2xl px-4 py-8 sm:py-12">
         {/* Wishlist meta */}
-        <div className="mb-8">
-          {/* Creator */}
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 to-violet-500 text-white text-sm font-bold">
-              {wishlist.user.avatarUrl ? (
-                <Image
-                  src={wishlist.user.avatarUrl}
-                  alt={ownerName}
-                  width={40}
-                  height={40}
-                  className="rounded-full object-cover"
-                />
-              ) : (
-                ownerName[0]?.toUpperCase()
-              )}
-            </div>
+        <div className="mb-10 animate-slide-up">
+          <div className="mb-5 flex items-center gap-3">
+            <Avatar
+              name={ownerName}
+              src={wishlist.user.avatarUrl}
+              seed={wishlist.user.id}
+              size="lg"
+            />
             <div>
-              <p className="text-sm font-medium text-gray-900">{ownerName}</p>
-              <p className="text-xs text-gray-400">составил вишлист</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-1">
+                Список желаний
+              </p>
+              <p className="text-sm font-medium text-ink-900">{ownerName}</p>
             </div>
           </div>
 
-          <h1 className="text-2xl font-extrabold text-gray-900">{wishlist.name}</h1>
+          <h1 className="font-display text-display-md text-balance text-ink-900">{wishlist.name}</h1>
           {wishlist.description && (
-            <p className="mt-2 text-gray-500">{wishlist.description}</p>
+            <p className="mt-3 text-ink-900/70 text-pretty leading-relaxed">{wishlist.description}</p>
           )}
 
-          {/* Stats */}
-          <div className="mt-3 flex gap-4 text-sm text-gray-400">
-            <span>{wishlist.itemCount} {itemsWord(wishlist.itemCount)}</span>
+          <div className="mt-4 flex items-center gap-2 text-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 text-brand-700 px-3 py-1 font-semibold">
+              🎁 {wishlist.itemCount} {itemsWord(wishlist.itemCount)}
+            </span>
           </div>
         </div>
 
         {/* Items */}
         {wishlist.items && wishlist.items.length > 0 ? (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3 stagger-parent">
             {wishlist.items.map((item) => (
               <WishlistItemCard key={item.id} item={item} wishlistId={wishlist.id} />
             ))}
           </div>
         ) : (
-          <div className="rounded-2xl border-2 border-dashed border-gray-200 py-16 text-center text-gray-400">
-            <div className="text-4xl mb-3">🎁</div>
-            <p>Список пока пуст</p>
+          <div className="rounded-3xl border-2 border-dashed border-gray-200 py-16 text-center">
+            <div className="text-5xl mb-3">🎁</div>
+            <p className="font-display text-lg font-bold text-ink-900">Список пока пуст</p>
+            <p className="text-sm text-ink-900/60 mt-1">Загляни попозже — хост ещё добавит</p>
           </div>
         )}
       </main>
@@ -141,48 +149,50 @@ function WishlistItemCard({ item }: { item: WishlistItem; wishlistId: string }) 
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-white shadow-sm ring-1 transition ${
-        isReserved ? 'ring-green-200 bg-green-50/50' : 'ring-gray-100 hover:ring-gray-200'
+      className={`relative overflow-hidden rounded-3xl bg-white border transition-all duration-300 ${
+        isReserved
+          ? 'border-emerald-200 bg-emerald-50/40'
+          : 'border-gray-100 shadow-soft hover:shadow-lifted hover:-translate-y-0.5'
       }`}
     >
       {isReserved && (
-        <div className="absolute right-3 top-3 z-10 rounded-full bg-green-500 px-2.5 py-0.5 text-xs font-semibold text-white">
+        <div className="absolute right-3 top-3 z-10 rounded-full bg-emerald-500 text-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm">
           {item.reservation?.reserverName
-            ? `${item.reservation.reserverName} берёт`
-            : 'Уже берут'}
+            ? `✓ ${item.reservation.reserverName}`
+            : '✓ забронировано'}
         </div>
       )}
 
-      <div className="flex gap-4 p-4">
+      <div className="flex gap-4 p-4 sm:p-5">
         {/* Image */}
         {item.imageUrl ? (
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100">
+          <div className="relative h-24 w-24 sm:h-28 sm:w-28 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
             <Image
               src={item.imageUrl}
               alt={item.name}
               fill
               className="object-cover"
-              sizes="96px"
+              sizes="112px"
             />
           </div>
         ) : (
-          <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-3xl">
+          <div className="flex h-24 w-24 sm:h-28 sm:w-28 shrink-0 items-center justify-center rounded-2xl bg-gradient-soft text-3xl">
             🎁
           </div>
         )}
 
         {/* Info */}
         <div className="flex flex-1 flex-col gap-1 min-w-0">
-          <h3 className="font-semibold text-gray-900 leading-tight line-clamp-2">
+          <h3 className="font-display font-bold text-ink-900 leading-snug line-clamp-2">
             {item.name}
           </h3>
           {item.description && (
-            <p className="text-sm text-gray-500 line-clamp-2">{item.description}</p>
+            <p className="text-sm text-ink-900/60 line-clamp-2">{item.description}</p>
           )}
-          <div className="mt-auto flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+          <div className="mt-auto pt-2 flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-3">
               {item.price != null && item.currency && (
-                <span className="text-sm font-bold text-gray-900">
+                <span className="text-base font-display font-bold text-ink-900 tabular-nums">
                   {formatPrice(item.price, item.currency)}
                 </span>
               )}
@@ -191,19 +201,17 @@ function WishlistItemCard({ item }: { item: WishlistItem; wishlistId: string }) 
                   href={item.sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-brand-500 hover:underline"
+                  className="text-xs font-semibold text-brand-500 hover:underline"
                 >
-                  Смотреть →
+                  Открыть →
                 </a>
               )}
             </div>
 
-            {!isReserved && (
-              <ReserveButton itemId={item.id} />
-            )}
+            {!isReserved && <ReserveButton itemId={item.id} />}
 
             {isReserved && item.reservation?.allowJoining && (
-              <button className="rounded-xl bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-600 transition">
+              <button className="rounded-xl bg-violet-500 hover:bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white active:scale-95 transition">
                 Скинуться
               </button>
             )}
