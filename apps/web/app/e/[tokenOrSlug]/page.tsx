@@ -21,12 +21,12 @@ export async function generateMetadata({ params }: { params: { tokenOrSlug: stri
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const ogUrl = `${base}/og/event/${params.tokenOrSlug}`
 
-  if (!data) return { title: 'Ивент · Wishly' }
+  if (!data) return { title: 'Ивент · Partyfi' }
 
   if (data.requiresPin) {
     return {
       metadataBase: new URL(base),
-      title: `${data.preview?.title ?? 'Закрытый ивент'} · Wishly`,
+      title: `${data.preview?.title ?? 'Закрытый ивент'} · Partyfi`,
       description: 'Приглашение на закрытый ивент',
       openGraph: {
         type: 'website',
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: { tokenOrSlug: stri
 
   return {
     metadataBase: new URL(base),
-    title: `${data.title} · Wishly`,
+    title: `${data.title} · Partyfi`,
     description,
     openGraph: {
       type: 'website',

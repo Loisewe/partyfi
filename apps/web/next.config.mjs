@@ -5,7 +5,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'cdn.wishly.app',
+        hostname: 'cdn.partyfi.app',
       },
       ...(process.env.NODE_ENV === 'development'
         ? [{ protocol: 'https', hostname: '**' }]

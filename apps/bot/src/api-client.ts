@@ -1,4 +1,4 @@
-// Typed API client for the Wishly backend — shared between web and bot.
+// Typed API client for the Partyfi backend — shared between web and bot.
 // The bot calls the same REST API, using the Telegram user's JWT.
 
 const API_BASE = process.env.API_URL ?? 'http://localhost:3001/api/v1'

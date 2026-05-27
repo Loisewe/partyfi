@@ -19,7 +19,7 @@ export function Header({ showCreate = false }: HeaderProps) {
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-1.5 group">
           <span className="inline-block w-7 h-7 rounded-lg bg-gradient-celebratory shadow-sm group-hover:scale-105 transition" aria-hidden />
-          <span className="font-display text-xl font-extrabold text-ink-900 tracking-tight">Wishly</span>
+          <span className="font-display text-xl font-extrabold text-ink-900 tracking-tight">Partyfi</span>
         </Link>
 
         <div className="flex items-center gap-3">

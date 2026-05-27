@@ -8,7 +8,7 @@ export default function SignInPage() {
         {/* Logo */}
         <div className="mb-8 text-center">
           <Link href="/" className="text-2xl font-extrabold text-brand-500">
-            Wishly
+            Partyfi
           </Link>
           <p className="mt-2 text-sm text-gray-500">
             Войди, чтобы видеть все свои вишлисты

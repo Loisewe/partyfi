@@ -6,7 +6,7 @@ import { generateNickname } from '@wishly/shared'
 import jwt from 'jsonwebtoken'
 
 // We use a custom JWT approach:
-// NextAuth handles the OAuth dance, then we issue our own Wishly JWT
+// NextAuth handles the OAuth dance, then we issue our own Partyfi JWT
 // that the Fastify API understands. This way the same JWT_SECRET works
 // for both Next.js server calls and direct API calls from the client.
 
@@ -90,7 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.sub) {
         session.user.id = token.sub
 
-        // Issue a Wishly API access token (signed with JWT_SECRET)
+        // Issue a Partyfi API access token (signed with JWT_SECRET)
         // This can be used directly against the Fastify API
         const wishlyToken = jwt.sign(
           { sub: token.sub, isAnonymous: false },

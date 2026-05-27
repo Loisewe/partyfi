@@ -51,7 +51,7 @@ export function WishlistPublicView({ wishlist: initial, shareToken }: Props) {
   const shareUrl =
     typeof window !== 'undefined'
       ? window.location.href
-      : `https://wishly.app/w/${shareToken}`
+      : `https://partyfi.app/w/${shareToken}`
 
   function handleShare() {
     if (navigator.share) {
@@ -72,7 +72,7 @@ export function WishlistPublicView({ wishlist: initial, shareToken }: Props) {
       <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <Link href="/" className="text-lg font-bold text-brand-500">
-            Wishly
+            Partyfi
           </Link>
           <button
             onClick={handleShare}

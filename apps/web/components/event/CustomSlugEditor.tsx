@@ -55,7 +55,7 @@ export function CustomSlugEditor({
   return (
     <div>
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-gray-500 select-none whitespace-nowrap">wishly.app/e/</span>
+        <span className="text-gray-500 select-none whitespace-nowrap">partyfi.app/e/</span>
         <input
           value={slug}
           onChange={(e) => setSlug(e.target.value.toLowerCase())}

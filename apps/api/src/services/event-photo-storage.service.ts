@@ -22,7 +22,7 @@ const R2_CONFIGURED =
   !!process.env.R2_ACCOUNT_ID
 
 const BUCKET = process.env.R2_BUCKET_NAME ?? 'wishly-uploads'
-const CDN_URL = process.env.R2_PUBLIC_URL ?? 'https://cdn.wishly.app'
+const CDN_URL = process.env.R2_PUBLIC_URL ?? 'https://cdn.partyfi.app'
 
 const LOCAL_ROOT = process.env.LOCAL_UPLOAD_DIR ?? path.resolve(process.cwd(), 'local-uploads')
 const API_PUBLIC_URL = process.env.API_URL ?? 'http://localhost:3001'

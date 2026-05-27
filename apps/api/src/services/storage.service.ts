@@ -17,7 +17,7 @@ const s3 = new S3Client({
 })
 
 const BUCKET = process.env.R2_BUCKET_NAME ?? 'wishly-uploads'
-const CDN_URL = process.env.R2_PUBLIC_URL ?? 'https://cdn.wishly.app'
+const CDN_URL = process.env.R2_PUBLIC_URL ?? 'https://cdn.partyfi.app'
 
 export async function uploadImage(
   buffer: Buffer,

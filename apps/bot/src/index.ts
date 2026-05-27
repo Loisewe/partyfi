@@ -12,7 +12,7 @@ if (!BOT_TOKEN) {
   process.exit(0)
 }
 
-const WEB_URL = process.env.WEB_URL ?? 'https://wishly.app'
+const WEB_URL = process.env.WEB_URL ?? 'https://partyfi.app'
 
 const bot = new Bot(BOT_TOKEN)
 
@@ -35,7 +35,7 @@ bot.command('start', async (ctx) => {
   }
 
   const keyboard = new InlineKeyboard()
-    .webApp('🎁 Открыть Wishly', `${WEB_URL}`)
+    .webApp('🎁 Открыть Partyfi', `${WEB_URL}`)
     .row()
     .webApp('🎉 Создать ивент', `${WEB_URL}/create-event`)
     .row()
@@ -43,12 +43,14 @@ bot.command('start', async (ctx) => {
 
   await ctx.reply(
     `*Привет, ${ctx.from?.first_name ?? 'друг'}!* 👋\n\n` +
-      `Я помогаю создавать вишлисты и собирать гостей на ивенты прямо в Telegram 🎁\n\n` +
-      `*Что умею:*\n` +
-      `• Вишлисты — добавляй товары по ссылке, координируй подарки\n` +
-      `• Ивенты — собирай RSVP, прикрепляй вишлист к дню рождения\n` +
-      `• Напоминалки — пинаю гостей за 24 часа и 2 часа до встречи\n\n` +
-      `Отправь мне ссылку на вишлист или ивент, или нажми кнопку ниже 👇`,
+      `Partyfi — одна красивая карточка для твоего ивента 🎉\n\n` +
+      `*Что внутри:*\n` +
+      `• RSVP в один тап с +1\n` +
+      `• Прикрепи вишлист — гости забронируют подарок\n` +
+      `• Фото-стенка после события\n` +
+      `• Напоминания за 24 и 2 часа\n` +
+      `• Премиум: кастомный URL, безлимит фото, аналитика\n\n` +
+      `Отправь ссылку на ивент или нажми кнопку ниже 👇`,
     {
       parse_mode: 'Markdown',
       reply_markup: keyboard,
@@ -230,7 +232,7 @@ async function showWishlist(ctx: Context, shareToken: string) {
 }
 
 // ── Inline mode: search wishlists to share ─────────────────────────────────
-// When someone types @WishlyBot in any chat, they can share their wishlist
+// When someone types @PartyfiBot in any chat, they can share their wishlist
 
 bot.on('inline_query', async (ctx) => {
   const shareUrl = `${WEB_URL}`
@@ -240,11 +242,11 @@ bot.on('inline_query', async (ctx) => {
         type: 'article',
         id: 'open_app',
         title: '🎁 Поделиться вишлистом',
-        description: 'Открой Wishly и выбери вишлист для отправки',
+        description: 'Открой Partyfi и выбери вишлист для отправки',
         input_message_content: {
-          message_text: `Загляни в мой вишлист на Wishly: ${shareUrl}`,
+          message_text: `Загляни в мой вишлист на Partyfi: ${shareUrl}`,
         },
-        reply_markup: new InlineKeyboard().url('Открыть Wishly', shareUrl),
+        reply_markup: new InlineKeyboard().url('Открыть Partyfi', shareUrl),
       },
       {
         type: 'article',
@@ -252,7 +254,7 @@ bot.on('inline_query', async (ctx) => {
         title: '🎉 Создать ивент',
         description: 'Партифул-стайл приглашения с RSVP в Telegram',
         input_message_content: {
-          message_text: `Собираюсь устроить тусовку — создай ивент на Wishly: ${shareUrl}/create-event`,
+          message_text: `Собираюсь устроить тусовку — создай ивент на Partyfi: ${shareUrl}/create-event`,
         },
         reply_markup: new InlineKeyboard().webApp(
           'Создать ивент',

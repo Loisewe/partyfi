@@ -60,7 +60,7 @@ export function DashboardClient({ wishlists: initial, user }: Props) {
       <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <Link href="/" className="text-xl font-extrabold text-brand-500">
-            Wishly
+            Partyfi
           </Link>
           <div className="flex items-center gap-3">
             {user.image && (

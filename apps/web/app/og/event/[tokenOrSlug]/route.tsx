@@ -79,7 +79,7 @@ export async function GET(
   const [from, to] = gradientFor(slug)
   const emoji = emojiFor(slug)
 
-  const fontText = `${title} ${hostName} ${dateStr} Wishly ${isPinGated ? 'Закрытый ивент' : ''} от`
+  const fontText = `${title} ${hostName} ${dateStr} Partyfi ${isPinGated ? 'Закрытый ивент' : ''} от`
   let interBold: ArrayBuffer | null = null
   try {
     interBold = await loadCyrillicFont(fontText)
@@ -104,7 +104,7 @@ export async function GET(
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', fontSize: 28, opacity: 0.7, fontWeight: 700 }}>
-            Wishly
+            Partyfi
           </div>
           <div style={{ display: 'flex', fontSize: 96 }}>{emoji}</div>
         </div>

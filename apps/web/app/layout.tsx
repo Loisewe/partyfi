@@ -26,22 +26,22 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Wishly — Вишлисты, которыми удобно делиться',
-    template: '%s | Wishly',
+    default: 'Partyfi — карточка ивента с RSVP и подарками',
+    template: '%s | Partyfi',
   },
   description:
-    'Создай вишлист за 30 секунд — без регистрации. Добавляй товары по ссылке, делись с друзьями, организуй совместные подарки.',
+    'Собери гостей и подарки на одной странице. RSVP, вишлист, фото-стенка, напоминания — всё через Telegram без приложений.',
   openGraph: {
     type: 'website',
     locale: 'ru_RU',
-    url: process.env.NEXT_PUBLIC_WEB_URL ?? 'https://wishly.app',
-    siteName: 'Wishly',
+    url: process.env.NEXT_PUBLIC_WEB_URL ?? 'https://partyfi.app',
+    siteName: 'Partyfi',
     images: [
       {
         url: '/og-default.png',
         width: 1200,
         height: 630,
-        alt: 'Wishly — вишлисты с удовольствием',
+        alt: 'Partyfi — одна карточка для твоего ивента',
       },
     ],
   },

@@ -2,7 +2,7 @@ import { CreateEventForm } from './CreateEventForm'
 import { Header } from '@/components/layout/Header'
 
 export const metadata = {
-  title: 'Создать ивент · Wishly',
+  title: 'Создать ивент · Partyfi',
 }
 
 export default function CreateEventPage() {

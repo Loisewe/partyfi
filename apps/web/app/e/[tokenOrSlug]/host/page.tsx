@@ -1,7 +1,7 @@
 import { HostDashboard } from './HostDashboard'
 
 export const metadata = {
-  title: 'Управление ивентом · Wishly',
+  title: 'Управление ивентом · Partyfi',
 }
 
 export default function HostPage({ params }: { params: { tokenOrSlug: string } }) {
