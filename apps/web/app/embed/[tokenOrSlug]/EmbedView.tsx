@@ -14,7 +14,7 @@ interface Props {
  * Embed-friendly view: minimal chrome, no sticky elements, no nav,
  * auto-resize to content via postMessage to parent frame.
  *
- * Use as iframe src: <iframe src="partyfi.app/embed/{token}" />
+ * Use as iframe src: <iframe src="eventgallery.app/embed/{token}" />
  */
 export function EmbedView({ initialData, tokenOrSlug }: Props) {
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -26,7 +26,7 @@ export function EmbedView({ initialData, tokenOrSlug }: Props) {
     const post = () => {
       try {
         window.parent.postMessage(
-          { type: 'partyfi:resize', height: root.scrollHeight },
+          { type: 'event-gallery:resize', height: root.scrollHeight },
           '*',
         )
       } catch { /* swallow */ }
@@ -125,7 +125,7 @@ export function EmbedView({ initialData, tokenOrSlug }: Props) {
       </a>
 
       <p className="text-[10px] text-ink-900/30 text-center mt-3">
-        powered by <a href={process.env.NEXT_PUBLIC_SITE_URL} target="_top" className="underline">Partyfi</a>
+        powered by <a href={process.env.NEXT_PUBLIC_SITE_URL} target="_top" className="underline">Event Gallery</a>
       </p>
     </div>
   )

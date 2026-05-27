@@ -4,8 +4,8 @@ import { TgAppShell } from './TgAppShell'
 import '../globals.css'
 
 export const metadata: Metadata = {
-  title: 'Partyfi',
-  description: 'Partyfi в Telegram',
+  title: 'Event Gallery',
+  description: 'Event Gallery в Telegram',
 }
 
 export default function TgLayout({ children }: { children: React.ReactNode }) {

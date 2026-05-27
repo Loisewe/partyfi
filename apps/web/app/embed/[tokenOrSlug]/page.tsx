@@ -17,7 +17,7 @@ export default async function EmbedPage({ params }: { params: { tokenOrSlug: str
 }
 
 export const metadata = {
-  title: 'Partyfi embed',
+  title: 'Event Gallery embed',
   // Permissive frame-ancestors to allow embedding on any site
   other: {
     'X-Frame-Options': 'ALLOWALL',

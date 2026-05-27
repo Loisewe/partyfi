@@ -78,7 +78,7 @@ export async function GET(
   const [from, to] = gradientFor(slug)
   const emoji = emojiFor(slug)
 
-  const fontText = `${title} ${hostName} ${dateStr} ${timeStr} Partyfi от приглашаю на закрытый ивент`
+  const fontText = `${title} ${hostName} ${dateStr} ${timeStr} Event Gallery от приглашаю на закрытый ивент`
   let manropeBold: ArrayBuffer | null = null
   try {
     manropeBold = await loadCyrillicFont(fontText)
@@ -112,7 +112,7 @@ export async function GET(
             }}
           />
           <div style={{ display: 'flex', fontSize: 36, fontWeight: 800, color: '#0f0a1e' }}>
-            Partyfi
+            Event Gallery
           </div>
         </div>
 
@@ -163,7 +163,7 @@ export async function GET(
               borderRadius: 999,
             }}
           >
-            Открыть в Partyfi →
+            Открыть в Event Gallery →
           </div>
         </div>
       </div>

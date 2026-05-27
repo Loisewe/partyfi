@@ -3,8 +3,8 @@ import type { Event } from '@wishly/db'
 
 export function buildIcs(event: Event, hostName: string, publicUrl: string): string {
   const cal = ical({
-    name: `Partyfi · ${event.title}`,
-    prodId: { company: 'Partyfi', product: 'Events', language: 'RU' },
+    name: `Event Gallery · ${event.title}`,
+    prodId: { company: 'Event Gallery', product: 'Events', language: 'RU' },
     method: ICalCalendarMethod.PUBLISH,
   })
 
@@ -16,7 +16,7 @@ export function buildIcs(event: Event, hostName: string, publicUrl: string): str
     description: event.description ?? '',
     location: event.location ?? '',
     url: publicUrl,
-    organizer: { name: hostName, email: 'noreply@partyfi.app' },
+    organizer: { name: hostName, email: 'noreply@eventgallery.app' },
     timezone: event.timezone,
   })
 

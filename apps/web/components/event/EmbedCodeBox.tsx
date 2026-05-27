@@ -14,7 +14,7 @@ export function EmbedCodeBox({ shareToken, customSlug }: { shareToken: string; c
   const tokenOrSlug = customSlug ?? shareToken
   const origin = typeof window !== 'undefined'
     ? window.location.origin
-    : 'https://partyfi.app'
+    : 'https://eventgallery.app'
 
   const embedSrc = `${origin}/embed/${tokenOrSlug}`
 
@@ -28,7 +28,7 @@ export function EmbedCodeBox({ shareToken, customSlug }: { shareToken: string; c
 ></iframe>
 <script>
 window.addEventListener('message', function(e) {
-  if (!e.data || e.data.type !== 'partyfi:resize') return
+  if (!e.data || e.data.type !== 'event-gallery:resize') return
   var f = document.querySelector('iframe[src*="${origin}/embed/"]')
   if (f && e.data.height) f.style.height = e.data.height + 'px'
 })

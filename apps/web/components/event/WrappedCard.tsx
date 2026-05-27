@@ -41,7 +41,7 @@ export function WrappedCard({ tokenOrSlug, eventTitle, startsAt, endsAt }: Props
         try {
           webApp.shareToStory(wrappedUrl, {
             text: `«${eventTitle}» — спасибо что были 💜`,
-            widget_link: { url: eventUrl, name: 'Открыть в Partyfi' },
+            widget_link: { url: eventUrl, name: 'Открыть в Event Gallery' },
           })
           webApp.HapticFeedback?.notificationOccurred('success')
         } catch {

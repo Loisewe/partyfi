@@ -1,6 +1,50 @@
 import type { FastifyPluginAsync } from 'fastify'
-import { createHmac } from 'crypto'
+import { createHmac, createHash } from 'crypto'
 import { requireAuth } from '../../plugins/auth'
+
+/**
+ * Verify Telegram Login Widget callback.
+ * Spec: https://core.telegram.org/widgets/login#checking-authorization
+ *
+ * Differs from initData: secret_key = SHA256(bot_token) directly (no 'WebAppData'
+ * prefix), and the user fields are sent flat (not nested in 'user' JSON).
+ */
+function verifyTelegramLoginWidget(
+  payload: Record<string, string>,
+  botToken: string,
+  maxAgeSeconds = 86400,
+): {
+  id: string
+  first_name?: string
+  last_name?: string
+  username?: string
+  photo_url?: string
+} | null {
+  const { hash, ...rest } = payload
+  if (!hash) return null
+
+  const dataCheckString = Object.entries(rest)
+    .filter(([, v]) => v !== undefined && v !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join('\n')
+
+  const secretKey = createHash('sha256').update(botToken).digest()
+  const expectedHash = createHmac('sha256', secretKey).update(dataCheckString).digest('hex')
+  if (expectedHash !== hash) return null
+
+  const authDate = parseInt(rest.auth_date ?? '0', 10)
+  if (!authDate || Date.now() / 1000 - authDate > maxAgeSeconds) return null
+  if (!rest.id) return null
+
+  return {
+    id: String(rest.id),
+    first_name: rest.first_name,
+    last_name: rest.last_name,
+    username: rest.username,
+    photo_url: rest.photo_url,
+  }
+}
 
 /**
  * Verify Telegram WebApp initData.
@@ -162,6 +206,63 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
   })
 
 
+
+  // ── POST /auth/telegram-login ───────────────────────────────────────────
+  // Verifies Telegram Login Widget callback (different signature from initData
+  // because Login Widget uses raw bot-token SHA256 instead of 'WebAppData'
+  // HMAC and posts user fields flat instead of nested).
+  // Spec: https://core.telegram.org/widgets/login#checking-authorization
+  app.post('/telegram-login', {
+    config: { rateLimit: { max: 20, timeWindow: '5 minutes' } },
+  }, async (request, reply) => {
+    const payload = request.body as Record<string, string>
+    if (!payload || typeof payload !== 'object') {
+      return reply.status(400).send({ error: 'payload required' })
+    }
+
+    const botToken = process.env.TELEGRAM_BOT_TOKEN
+    if (!botToken) {
+      return reply.status(503).send({ error: 'Telegram auth not configured' })
+    }
+
+    const tgUser = verifyTelegramLoginWidget(payload, botToken)
+    if (!tgUser) return reply.status(401).send({ error: 'Invalid login signature' })
+
+    const displayName =
+      [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ').trim() ||
+      tgUser.username ||
+      null
+
+    const user = await app.prisma.user.upsert({
+      where: { telegramId: tgUser.id },
+      create: {
+        telegramId: tgUser.id,
+        telegramUsername: tgUser.username ?? null,
+        name: displayName,
+        avatarUrl: tgUser.photo_url ?? null,
+        nickname: displayName ?? `tg-${tgUser.id.slice(0, 6)}`,
+        isAnonymous: false,
+      },
+      update: {
+        telegramUsername: tgUser.username ?? null,
+        name: displayName ?? undefined,
+        avatarUrl: tgUser.photo_url ?? undefined,
+      },
+    })
+
+    const token = await reply.jwtSign({ sub: user.id, telegramId: user.telegramId })
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        nickname: user.nickname,
+        avatarUrl: user.avatarUrl,
+        telegramUsername: user.telegramUsername,
+      },
+      accessToken: token,
+    }
+  })
 
   // ── POST /auth/merge ────────────────────────────────────────────────────
   // Called after sign-in by the Next.js client.

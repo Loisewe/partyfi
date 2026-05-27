@@ -8,4 +8,4 @@ export default function TgEventPage({ params }: Props) {
   return <TgEventView tokenOrSlug={params.tokenOrSlug} />
 }
 
-export const metadata = { title: 'Ивент · Partyfi' }
+export const metadata = { title: 'Ивент · Event Gallery' }

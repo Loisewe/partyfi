@@ -59,7 +59,7 @@ export async function GET(
     ? new Date(event.startsAt).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
     : ''
 
-  const fontText = `${title} ${dateStr} Partyfi Wrapped Закончилось гости пришли фото моментов спасибо`
+  const fontText = `${title} ${dateStr} Event Gallery Wrapped Закончилось гости пришли фото моментов спасибо`
   let manropeBold: ArrayBuffer | null = null
   try {
     manropeBold = await loadCyrillicFont(fontText)
@@ -91,7 +91,7 @@ export async function GET(
               background: 'linear-gradient(135deg, #ff2d7b 0%, #fb923c 60%, #fbbf24 100%)',
             }}
           />
-          <div style={{ display: 'flex', fontSize: 36, fontWeight: 800 }}>Partyfi</div>
+          <div style={{ display: 'flex', fontSize: 36, fontWeight: 800 }}>Event Gallery</div>
         </div>
 
         {/* Title block */}

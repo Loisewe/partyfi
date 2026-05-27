@@ -17,7 +17,7 @@ export function WishlistEditor({ wishlist: initialWishlist, editToken }: Props) 
   const [showAddModal, setShowAddModal] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://partyfi.app'}/w/${wishlist.shareToken}`
+  const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : 'https://eventgallery.app'}/w/${wishlist.shareToken}`
 
   async function handleCopyShare() {
     await navigator.clipboard.writeText(shareUrl)

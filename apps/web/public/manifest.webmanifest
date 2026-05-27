@@ -1,6 +1,6 @@
 {
-  "name": "Partyfi",
-  "short_name": "Partyfi",
+  "name": "Event Gallery",
+  "short_name": "Event Gallery",
   "description": "Карточка ивента с RSVP, вишлистом, фото-стенкой — всё на одной странице",
   "start_url": "/",
   "display": "standalone",

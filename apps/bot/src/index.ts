@@ -12,7 +12,7 @@ if (!BOT_TOKEN) {
   process.exit(0)
 }
 
-const WEB_URL = process.env.WEB_URL ?? 'https://partyfi.app'
+const WEB_URL = process.env.WEB_URL ?? 'https://eventgallery.app'
 const API_URL = process.env.API_URL ?? 'http://localhost:3001/api/v1'
 const BOT_WEBHOOK_SECRET = process.env.BOT_WEBHOOK_SECRET ?? process.env.JWT_SECRET ?? 'dev-secret'
 
@@ -92,7 +92,7 @@ bot.command('start', async (ctx) => {
   }
 
   const keyboard = new InlineKeyboard()
-    .webApp('🎁 Открыть Partyfi', `${WEB_URL}`)
+    .webApp('🎁 Открыть Event Gallery', `${WEB_URL}`)
     .row()
     .webApp('🎉 Создать ивент', `${WEB_URL}/create-event`)
     .row()
@@ -100,7 +100,7 @@ bot.command('start', async (ctx) => {
 
   await ctx.reply(
     `*Привет, ${ctx.from?.first_name ?? 'друг'}!* 👋\n\n` +
-      `Partyfi — одна красивая карточка для твоего ивента 🎉\n\n` +
+      `Event Gallery — одна красивая карточка для твоего ивента 🎉\n\n` +
       `*Что внутри:*\n` +
       `• RSVP в один тап с +1\n` +
       `• Прикрепи вишлист — гости забронируют подарок\n` +
@@ -171,7 +171,7 @@ bot.on('my_chat_member', async (ctx) => {
         `👋 *Партифи в группе!*\n\n` +
           `Чтобы вывесить ивент сюда — напишите:\n` +
           `\`/share <token-ивента>\`\n\n` +
-          `Token виден в URL: \`partyfi\\.app/e/<token>\`.\n` +
+          `Token виден в URL: \`event-gallery\\.app/e/<token>\`.\n` +
           `Для кастомных URL — тоже подойдёт slug.`,
         { parse_mode: 'MarkdownV2' },
       )
@@ -337,7 +337,7 @@ async function showWishlist(ctx: Context, shareToken: string) {
 }
 
 // ── Inline mode: search wishlists to share ─────────────────────────────────
-// When someone types @PartyfiBot in any chat, they can share their wishlist
+// When someone types @Event GalleryBot in any chat, they can share their wishlist
 
 bot.on('inline_query', async (ctx) => {
   const shareUrl = `${WEB_URL}`
@@ -347,11 +347,11 @@ bot.on('inline_query', async (ctx) => {
         type: 'article',
         id: 'open_app',
         title: '🎁 Поделиться вишлистом',
-        description: 'Открой Partyfi и выбери вишлист для отправки',
+        description: 'Открой Event Gallery и выбери вишлист для отправки',
         input_message_content: {
-          message_text: `Загляни в мой вишлист на Partyfi: ${shareUrl}`,
+          message_text: `Загляни в мой вишлист на Event Gallery: ${shareUrl}`,
         },
-        reply_markup: new InlineKeyboard().url('Открыть Partyfi', shareUrl),
+        reply_markup: new InlineKeyboard().url('Открыть Event Gallery', shareUrl),
       },
       {
         type: 'article',
@@ -359,7 +359,7 @@ bot.on('inline_query', async (ctx) => {
         title: '🎉 Создать ивент',
         description: 'Партифул-стайл приглашения с RSVP в Telegram',
         input_message_content: {
-          message_text: `Собираюсь устроить тусовку — создай ивент на Partyfi: ${shareUrl}/create-event`,
+          message_text: `Собираюсь устроить тусовку — создай ивент на Event Gallery: ${shareUrl}/create-event`,
         },
         reply_markup: new InlineKeyboard().webApp(
           'Создать ивент',

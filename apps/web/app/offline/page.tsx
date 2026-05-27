@@ -1,4 +1,4 @@
-export const metadata = { title: 'Нет интернета · Partyfi' }
+export const metadata = { title: 'Нет интернета · Event Gallery' }
 
 export default function OfflinePage() {
   return (

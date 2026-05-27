@@ -77,7 +77,7 @@ async function main() {
   await app.register(swagger, {
     openapi: {
       info: {
-        title: 'Partyfi API',
+        title: 'Event Gallery API',
         description: 'Wishlist platform API',
         version: '1.0.0',
       },
@@ -125,7 +125,7 @@ async function main() {
 
   const port = parseInt(process.env.API_PORT ?? '3001', 10)
   await app.listen({ port, host: '0.0.0.0' })
-  app.log.info(`Partyfi API listening on port ${port}`)
+  app.log.info(`Event Gallery API listening on port ${port}`)
 }
 
 main().catch((err) => {

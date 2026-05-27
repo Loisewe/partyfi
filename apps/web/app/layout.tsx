@@ -27,22 +27,22 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'Partyfi — карточка ивента с RSVP и подарками',
-    template: '%s | Partyfi',
+    default: 'Event Gallery — карточка ивента с RSVP и подарками',
+    template: '%s | Event Gallery',
   },
   description:
     'Собери гостей и подарки на одной странице. RSVP, вишлист, фото-стенка, напоминания — всё через Telegram без приложений.',
   openGraph: {
     type: 'website',
     locale: 'ru_RU',
-    url: process.env.NEXT_PUBLIC_WEB_URL ?? 'https://partyfi.app',
-    siteName: 'Partyfi',
+    url: process.env.NEXT_PUBLIC_WEB_URL ?? 'https://eventgallery.app',
+    siteName: 'Event Gallery',
     images: [
       {
         url: '/og-default.png',
         width: 1200,
         height: 630,
-        alt: 'Partyfi — одна карточка для твоего ивента',
+        alt: 'Event Gallery — одна карточка для твоего ивента',
       },
     ],
   },

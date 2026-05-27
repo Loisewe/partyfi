@@ -304,7 +304,7 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
         <p className="mt-8 text-center text-xs text-ink-900/30">
           Создано с <span className="text-brand-500">♥</span> на{' '}
           <a href="/" className="font-semibold text-ink-900/50 hover:text-ink-900 underline">
-            Partyfi
+            Event Gallery
           </a>
         </p>
       </div>

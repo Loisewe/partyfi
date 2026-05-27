@@ -46,7 +46,7 @@ export function ShareToStoryButton({ tokenOrSlug, eventTitle }: Props) {
     try {
       webApp.shareToStory(mediaUrl, {
         text: `Зову тебя на ${eventTitle} 🎉`,
-        widget_link: { url: eventUrl, name: 'Открыть в Partyfi' },
+        widget_link: { url: eventUrl, name: 'Открыть в Event Gallery' },
       })
       webApp.HapticFeedback?.notificationOccurred('success')
     } catch (err) {

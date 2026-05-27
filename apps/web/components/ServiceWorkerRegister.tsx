@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 
 /**
- * Registers the Partyfi service worker for offline shell.
+ * Registers the Event Gallery service worker for offline shell.
  * Only runs in production browsers — dev mode triggers reload loops with SW.
  */
 export function ServiceWorkerRegister() {
@@ -16,7 +16,7 @@ export function ServiceWorkerRegister() {
       navigator.serviceWorker
         .register('/sw.js', { scope: '/' })
         .catch((err) => {
-          console.warn('[partyfi] SW register failed:', err)
+          console.warn('[event-gallery] SW register failed:', err)
         })
     }
 

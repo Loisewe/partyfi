@@ -54,7 +54,7 @@ export function WishlistPublicView({ wishlist: initial, shareToken }: Props) {
   const shareUrl =
     typeof window !== 'undefined'
       ? window.location.href
-      : `https://partyfi.app/w/${shareToken}`
+      : `https://eventgallery.app/w/${shareToken}`
 
   async function handleShare() {
     if (typeof navigator !== 'undefined' && navigator.share) {
@@ -87,7 +87,7 @@ export function WishlistPublicView({ wishlist: initial, shareToken }: Props) {
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <Link href="/" className="flex items-center gap-1.5 group">
             <span className="inline-block w-7 h-7 rounded-lg bg-gradient-celebratory shadow-sm group-hover:scale-105 transition" aria-hidden />
-            <span className="font-display text-lg font-extrabold text-ink-900 tracking-tight">Partyfi</span>
+            <span className="font-display text-lg font-extrabold text-ink-900 tracking-tight">Event Gallery</span>
           </Link>
           <button onClick={handleShare} className="pill-secondary text-xs px-3 py-1.5">
             📤 Поделиться

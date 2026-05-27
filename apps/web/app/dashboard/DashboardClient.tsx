@@ -63,7 +63,7 @@ export function DashboardClient({ wishlists: initial, user }: Props) {
         <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
           <Link href="/" className="flex items-center gap-1.5 group">
             <span className="inline-block w-7 h-7 rounded-lg bg-gradient-celebratory shadow-sm group-hover:scale-105 transition" aria-hidden />
-            <span className="font-display text-xl font-extrabold text-ink-900 tracking-tight">Partyfi</span>
+            <span className="font-display text-xl font-extrabold text-ink-900 tracking-tight">Event Gallery</span>
           </Link>
           <div className="flex items-center gap-3">
             {user.image && (
