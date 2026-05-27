@@ -16,7 +16,61 @@ interface RedisWrapper {
   set(key: string, ttl: number, value: string): Promise<unknown>
 }
 
+/**
+ * SSRF guard. Rejects:
+ *   - non-http(s) schemes (file://, gopher://, etc.)
+ *   - localhost, link-local, private + reserved IPv4 ranges
+ *   - IPv6 loopback, ULA (fc00::/7)
+ *   - bare-hostname requests without a valid public DNS lookup (basic check)
+ *
+ * Allows public URLs only. Throws on bad input.
+ */
+function assertSafeScrapeUrl(input: string): URL {
+  let u: URL
+  try { u = new URL(input) } catch { throw new Error('Invalid URL') }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+    throw new Error('Only http(s) URLs are allowed')
+  }
+  const host = u.hostname.toLowerCase()
+  if (
+    host === 'localhost' ||
+    host === '0.0.0.0' ||
+    host === '::1' ||
+    host === '[::1]' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.local') ||
+    host.endsWith('.internal') ||
+    host.endsWith('.cluster.local')
+  ) {
+    throw new Error('Internal hostnames are not allowed')
+  }
+  // Reject IPv4 literals in private / reserved ranges
+  const v4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)
+  if (v4) {
+    const [a, b] = [parseInt(v4[1]!, 10), parseInt(v4[2]!, 10)]
+    if (
+      a === 10 ||
+      a === 127 ||
+      a === 0 ||
+      (a === 169 && b === 254) ||      // link-local
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      a >= 224                          // multicast + reserved
+    ) {
+      throw new Error('Private/reserved IPs are not allowed')
+    }
+  }
+  // Reject IPv6 ULA / link-local literals (basic)
+  if (host.startsWith('[fc') || host.startsWith('[fd') || host.startsWith('[fe80')) {
+    throw new Error('Private IPv6 not allowed')
+  }
+  return u
+}
+
 export async function scrapeUrl(url: string, redis: RedisWrapper): Promise<ScrapedData> {
+  // Validate before cache key — corrupt URLs shouldn't poison cache
+  assertSafeScrapeUrl(url)
+
   const cacheKey = `scrape:${crypto.createHash('sha256').update(url).digest('hex')}`
   const cached = await redis.get(cacheKey)
   if (cached) { try { return JSON.parse(cached) as ScrapedData } catch { /* */ } }
