@@ -13,6 +13,7 @@ import { RecurrenceEditor } from '@/components/event/RecurrenceEditor'
 import { CoHostManager } from '@/components/event/CoHostManager'
 import { AnalyticsPanel } from '@/components/event/AnalyticsPanel'
 import { ThemeColorPicker } from '@/components/event/ThemeColorPicker'
+import { EmbedCodeBox } from '@/components/event/EmbedCodeBox'
 import { ExternalLinksHostEditor } from '@/components/event/ExternalLinksHostEditor'
 
 interface Props { tokenOrSlug: string }
@@ -192,6 +193,14 @@ export function HostDashboard({ tokenOrSlug }: Props) {
             </section>
           </>
         )}
+
+        {/* Embed code for blogs / sites */}
+        <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+          <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+            <span>📦</span> Embed на свой сайт
+          </h2>
+          <EmbedCodeBox shareToken={event.shareToken} customSlug={event.customSlug} />
+        </section>
 
         {/* External links module — free 3, premium 10 */}
         <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">

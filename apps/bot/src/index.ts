@@ -133,6 +133,54 @@ bot.on('message:text', async (ctx) => {
   }
 })
 
+// ── /share <token> command (works in any chat including groups) ───────────
+// Lets a user post an event card into a TG group. Anyone in the group can
+// trigger it — no host-only check because the resulting card is just a
+// public preview (whatever /e/{token} would show in a browser).
+
+bot.command('share', async (ctx) => {
+  const token = ctx.match?.trim()
+  if (!token) {
+    await ctx.reply(
+      'Использование: `/share <token-или-slug-ивента>`\n\n' +
+        'Например: `/share max-bday`',
+      { parse_mode: 'Markdown' },
+    )
+    return
+  }
+  await showEvent(ctx, token)
+})
+
+// ── my_chat_member: bot added to / removed from a group ───────────────────
+
+bot.on('my_chat_member', async (ctx) => {
+  const update = ctx.myChatMember
+  const newStatus = update.new_chat_member.status
+  const oldStatus = update.old_chat_member.status
+
+  const isGroupChat = ctx.chat.type === 'group' || ctx.chat.type === 'supergroup'
+  if (!isGroupChat) return
+
+  // Bot was just added (member / admin from left/kicked)
+  const wasOut = oldStatus === 'left' || oldStatus === 'kicked'
+  const isIn = newStatus === 'member' || newStatus === 'administrator'
+
+  if (wasOut && isIn) {
+    try {
+      await ctx.reply(
+        `👋 *Партифи в группе!*\n\n` +
+          `Чтобы вывесить ивент сюда — напишите:\n` +
+          `\`/share <token-ивента>\`\n\n` +
+          `Token виден в URL: \`partyfi\\.app/e/<token>\`.\n` +
+          `Для кастомных URL — тоже подойдёт slug.`,
+        { parse_mode: 'MarkdownV2' },
+      )
+    } catch (err) {
+      console.error('[bot] group welcome failed:', err)
+    }
+  }
+})
+
 // ── Callback: my_stuff (dashboard) ─────────────────────────────────────────
 
 bot.callbackQuery('my_stuff', async (ctx) => {

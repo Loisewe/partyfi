@@ -23,15 +23,20 @@ type SentryClient = {
 
 let sentry: SentryClient | null = null
 
-// Hot-load Sentry if DSN configured AND package installed
+// Hot-load Sentry if DSN configured AND package installed.
+// We use Function() to construct the dynamic require so webpack does NOT try
+// to resolve '@sentry/nextjs' at build time. Without this, the build fails
+// when the package is not installed (which is the default — we ship without
+// Sentry as a peer dep).
 async function loadSentry(): Promise<SentryClient | null> {
   if (sentry) return sentry
+  if (typeof window === 'undefined') return null
   const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN
   if (!dsn) return null
   try {
-    // Dynamic import so missing package doesn't break the build
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const mod = (await import('@sentry/nextjs' as any).catch(() => null)) as
+    // eslint-disable-next-line @typescript-eslint/no-implied-eval, no-new-func
+    const dynamicImport = new Function('s', 'return import(s)') as (s: string) => Promise<unknown>
+    const mod = (await dynamicImport('@sentry/nextjs').catch(() => null)) as
       | (SentryClient & { init?: (opts: { dsn: string }) => void })
       | null
     if (!mod) return null
