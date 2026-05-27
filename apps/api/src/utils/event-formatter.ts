@@ -67,6 +67,11 @@ export function formatPublicEvent(event: EventWithRelations): PublicEvent {
       : null,
     rsvpStats,
     isPremium: !!event.upgrade,
+    repeatEvery: ((event as unknown as { repeatEvery?: string | null }).repeatEvery ?? null) as PublicEvent['repeatEvery'],
+    pollQuestion: (event as unknown as { pollQuestion?: string | null }).pollQuestion ?? null,
+    pollOptions: Array.isArray((event as unknown as { pollOptions?: unknown }).pollOptions)
+      ? ((event as unknown as { pollOptions: string[] }).pollOptions)
+      : null,
     createdAt: event.createdAt.toISOString(),
   }
 }

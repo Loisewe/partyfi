@@ -22,6 +22,7 @@ import { eventCoverPresetRoutes } from './routes/event-cover-presets'
 import { eventPhotoRoutes, localUploadsRoute } from './routes/event-photos'
 import { paymentRoutes } from './routes/payments'
 import { startRemindersWorker } from './services/reminders.service'
+import { startAutoCloneWorker } from './services/auto-clone.service'
 
 // Crash-safety: log instead of exit on async errors caught by Node's
 // global handlers. Fastify route errors are already handled by setErrorHandler.
@@ -106,6 +107,7 @@ async function main() {
 
   // ── Background workers ─────────────────────────────────────────────────────
   startRemindersWorker(app.prisma, app)
+  startAutoCloneWorker(app.prisma, app)
 
   // ── Health check ──────────────────────────────────────────────────────────
 

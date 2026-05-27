@@ -9,6 +9,7 @@ import { UpgradeButton } from '@/components/event/UpgradeButton'
 import { CustomSlugEditor } from '@/components/event/CustomSlugEditor'
 import { DuplicateEventButton } from '@/components/event/DuplicateEventButton'
 import { ShareToStoryButton } from '@/components/event/ShareToStoryButton'
+import { RecurrenceEditor } from '@/components/event/RecurrenceEditor'
 
 interface Props { tokenOrSlug: string }
 
@@ -139,14 +140,23 @@ export function HostDashboard({ tokenOrSlug }: Props) {
           />
         </section>
 
-        {/* Custom slug — premium only */}
+        {/* Premium-only sections */}
         {event.isPremium && (
-          <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
-            <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
-              <span>⭐</span> Кастомный URL
-            </h2>
-            <CustomSlugEditor event={event} onUpdated={load} />
-          </section>
+          <>
+            <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+              <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+                <span>⭐</span> Кастомный URL
+              </h2>
+              <CustomSlugEditor event={event} onUpdated={load} />
+            </section>
+
+            <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+              <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+                <span>🔁</span> Повторение
+              </h2>
+              <RecurrenceEditor event={event} onUpdated={load} />
+            </section>
+          </>
         )}
 
         {/* Share */}

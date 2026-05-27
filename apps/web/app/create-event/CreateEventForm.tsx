@@ -8,6 +8,7 @@ import { z } from 'zod'
 import { eventsApi } from '@/lib/api-client'
 import { CoverPresetPicker } from '@/components/event/CoverPresetPicker'
 import { WishlistAttacher } from '@/components/event/WishlistAttacher'
+import { PollEditor } from '@/components/event/PollEditor'
 
 // Form schema uses datetime-local (no offset) — we convert to ISO+offset on submit
 const formSchema = z.object({
@@ -36,6 +37,8 @@ export function CreateEventForm() {
   const [serverError, setServerError] = useState<string | null>(null)
   const [coverPresetId, setCoverPresetId] = useState<string | null>(null)
   const [wishlistId, setWishlistId] = useState<string | null>(null)
+  const [pollQuestion, setPollQuestion] = useState('')
+  const [pollOptions, setPollOptions] = useState<string[]>([])
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -59,6 +62,11 @@ export function CreateEventForm() {
         remindersEnabled: true,
         coverPresetId: coverPresetId ?? undefined,
         wishlistId: wishlistId ?? undefined,
+        pollQuestion: pollQuestion.trim() || undefined,
+        pollOptions:
+          pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2
+            ? pollOptions.map((o) => o.trim()).filter(Boolean)
+            : undefined,
       })
 
       if (result.editToken) {
@@ -146,6 +154,15 @@ export function CreateEventForm() {
       <div>
         <label className={labelClass}>🎁 Вишлист (опционально)</label>
         <WishlistAttacher selectedId={wishlistId} onChange={setWishlistId} />
+      </div>
+
+      <div>
+        <PollEditor
+          question={pollQuestion}
+          options={pollOptions}
+          onQuestionChange={setPollQuestion}
+          onOptionsChange={setPollOptions}
+        />
       </div>
 
       <details className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 group">

@@ -213,7 +213,12 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
 
         {/* RSVP form */}
         <section className="mt-8 rounded-3xl bg-white border border-gray-100 p-5 sm:p-7 shadow-soft animate-slide-up" style={{ animationDelay: '0.35s' }}>
-          <RsvpForm tokenOrSlug={tokenOrSlug} pin={pin} />
+          <RsvpForm
+            tokenOrSlug={tokenOrSlug}
+            pin={pin}
+            pollQuestion={event.pollQuestion}
+            pollOptions={event.pollOptions}
+          />
         </section>
 
         {/* Guests */}

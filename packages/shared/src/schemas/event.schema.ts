@@ -1,5 +1,13 @@
 import { z } from 'zod'
 
+export const recurrenceCadenceSchema = z.enum(['WEEKLY', 'MONTHLY', 'YEARLY'])
+export type RecurrenceCadence = z.infer<typeof recurrenceCadenceSchema>
+
+export const pollOptionsSchema = z
+  .array(z.string().min(1).max(80))
+  .min(2, 'Минимум 2 варианта')
+  .max(6, 'Максимум 6 вариантов')
+
 export const createEventSchema = z.object({
   title: z.string().min(1, 'Название обязательно').max(120),
   description: z.string().max(2000).optional(),
@@ -13,6 +21,11 @@ export const createEventSchema = z.object({
   wishlistId: z.string().cuid().optional(),
   rsvpVisibility: z.enum(['ALL_GUESTS', 'HOST_ONLY']).default('ALL_GUESTS'),
   remindersEnabled: z.boolean().default(true),
+  // Premium feature — recurring auto-duplicate
+  repeatEvery: recurrenceCadenceSchema.nullable().optional(),
+  // Optional single-question poll
+  pollQuestion: z.string().min(1).max(200).optional(),
+  pollOptions: pollOptionsSchema.optional(),
 })
 
 export const updateEventSchema = createEventSchema.partial().extend({
@@ -42,6 +55,7 @@ export const createRsvpSchema = z.object({
   plusOnes: z.number().int().min(0).max(10).default(0),
   message: z.string().max(500).optional(),
   guestDisplayName: z.string().min(1).max(100).optional(),
+  pollAnswer: z.string().max(80).optional(),
 })
 
 export type CreateEventInput = z.infer<typeof createEventSchema>

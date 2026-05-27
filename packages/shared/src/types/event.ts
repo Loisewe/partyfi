@@ -37,6 +37,11 @@ export interface PublicEvent {
   } | null
   rsvpStats: EventRsvpStats
   isPremium: boolean
+  /** Premium: auto-clone cadence after end-date. null = one-time event. */
+  repeatEvery: 'WEEKLY' | 'MONTHLY' | 'YEARLY' | null
+  /** Optional single-question poll shown on RSVP form */
+  pollQuestion: string | null
+  pollOptions: string[] | null
   createdAt: string
 }
 

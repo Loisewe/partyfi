@@ -1,9 +1,9 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'nodejs'
-export const contentType = 'image/png'
-export const size = { width: 1200, height: 630 }
 export const revalidate = 3600
+
+const size = { width: 1200, height: 630 } as const
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'
 

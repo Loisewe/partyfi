@@ -1,10 +1,10 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'nodejs'
-export const contentType = 'image/png'
-// Telegram Story format: 1080 × 1920 vertical
-export const size = { width: 1080, height: 1920 }
 export const revalidate = 3600
+
+// Telegram Story format: 1080 × 1920 vertical
+const size = { width: 1080, height: 1920 } as const
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'
 

@@ -10,6 +10,8 @@ import { useToast } from '@/components/ui/Toast'
 interface Props {
   tokenOrSlug: string
   pin?: string
+  pollQuestion?: string | null
+  pollOptions?: string[] | null
 }
 
 interface StatusButton {
@@ -46,7 +48,7 @@ const SUCCESS_COPY: Record<RsvpStatus, { headline: string; sub: string; bg: stri
   },
 }
 
-export function RsvpForm({ tokenOrSlug, pin }: Props) {
+export function RsvpForm({ tokenOrSlug, pin, pollQuestion, pollOptions }: Props) {
   const toast = useToast()
   const [submittedStatus, setSubmittedStatus] = useState<RsvpStatus | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -74,6 +76,9 @@ export function RsvpForm({ tokenOrSlug, pin }: Props) {
 
   const currentStatus = watch('status')
   const currentPlusOnes = watch('plusOnes') ?? 0
+  const currentPollAnswer = watch('pollAnswer')
+
+  const showPoll = !!pollQuestion && Array.isArray(pollOptions) && pollOptions.length >= 2
 
   async function onSubmit(data: CreateRsvpInput) {
     setError(null)
@@ -191,6 +196,33 @@ export function RsvpForm({ tokenOrSlug, pin }: Props) {
             >
               +
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Poll — if event has pollQuestion */}
+      {showPoll && (
+        <div className="rounded-2xl bg-brand-50/40 border border-brand-100 p-4 animate-fade-in">
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-700 mb-2">📊 Опрос от хоста</p>
+          <p className="font-display font-semibold text-ink-900 mb-3">{pollQuestion}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {pollOptions!.map((opt) => {
+              const isSelected = currentPollAnswer === opt
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setValue('pollAnswer', opt, { shouldDirty: true })}
+                  className={`px-3 py-2.5 rounded-xl text-sm font-medium text-left transition active:scale-95 ${
+                    isSelected
+                      ? 'bg-brand-500 text-white shadow-soft'
+                      : 'bg-white border border-gray-200 text-ink-900 hover:border-brand-300'
+                  }`}
+                >
+                  {isSelected && '✓ '}{opt}
+                </button>
+              )
+            })}
           </div>
         </div>
       )}

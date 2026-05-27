@@ -17,6 +17,7 @@ import {
 } from '../../utils/event-formatter'
 import { publishEventEvent } from '../sse'
 import { scheduleEventReminders, clearEventReminders } from '../../services/reminders.service'
+import { scheduleAutoClone } from '../../services/auto-clone.service'
 
 const EVENT_INCLUDE = {
   host: true,
@@ -44,6 +45,8 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
 
     const pinHash = body.pin ? await bcrypt.hash(body.pin, 10) : null
 
+    // repeatEvery is premium-only; silently ignore at create-time (host can
+    // upgrade post-creation and PATCH the field afterwards)
     const event = await app.prisma.event.create({
       data: {
         hostUserId: userId,
@@ -59,6 +62,8 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
         pinHash,
         rsvpVisibility: body.rsvpVisibility,
         remindersEnabled: body.remindersEnabled,
+        pollQuestion: body.pollQuestion ?? null,
+        pollOptions: body.pollOptions ?? undefined,
       },
       include: EVENT_INCLUDE,
     })
@@ -184,8 +189,20 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
     if (body.rsvpVisibility !== undefined)   data.rsvpVisibility = body.rsvpVisibility
     if (body.remindersEnabled !== undefined) data.remindersEnabled = body.remindersEnabled
     if (body.cancelMessage !== undefined)    data.cancelMessage = body.cancelMessage
+    if (body.pollQuestion !== undefined)     data.pollQuestion = body.pollQuestion
+    if (body.pollOptions !== undefined)      data.pollOptions = body.pollOptions
     if (body.pin !== undefined) {
       data.pinHash = body.pin ? await bcrypt.hash(body.pin, 10) : null
+    }
+
+    // repeatEvery — premium-only (auto-clone after end-date)
+    if (body.repeatEvery !== undefined) {
+      if (body.repeatEvery !== null && !event.upgrade) {
+        return reply.status(402).send({
+          error: 'Повторение ивента доступно только в премиум',
+        })
+      }
+      data.repeatEvery = body.repeatEvery
     }
 
     // customSlug — premium-only
@@ -228,6 +245,17 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
     if (body.startsAt !== undefined || body.remindersEnabled !== undefined) {
       scheduleEventReminders(app.prisma, updated).catch((err) =>
         app.log.error({ err: err.message, eventId: id }, '[reminders] reschedule failed'),
+      )
+    }
+
+    // Re-schedule auto-clone if repeatEvery or dates changed
+    if (
+      body.repeatEvery !== undefined ||
+      body.startsAt !== undefined ||
+      body.endsAt !== undefined
+    ) {
+      scheduleAutoClone(app.prisma, updated).catch((err) =>
+        app.log.error({ err: err.message, eventId: id }, '[auto-clone] schedule failed'),
       )
     }
 
@@ -374,6 +402,7 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
         status: body.status,
         plusOnes: body.plusOnes,
         message: body.message ?? null,
+        pollAnswer: body.pollAnswer ?? null,
       },
       create: {
         eventId: event.id,
@@ -381,6 +410,7 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
         status: body.status,
         plusOnes: body.plusOnes,
         message: body.message ?? null,
+        pollAnswer: body.pollAnswer ?? null,
         cancelTokenHash,
       },
     })

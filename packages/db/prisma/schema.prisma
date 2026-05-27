@@ -342,6 +342,16 @@ model Event {
   status        EventStatus @default(ACTIVE)
   cancelMessage String?
 
+  // Premium: auto-duplicate after end-date on cadence
+  repeatEvery       RecurrenceCadence? // null = one-time
+  repeatParentId    String?            // points to original parent if this is an auto-created occurrence
+  repeatParent      Event?  @relation("EventRecurrence", fields: [repeatParentId], references: [id], onDelete: SetNull)
+  repeatChildren    Event[] @relation("EventRecurrence")
+
+  // Optional single-question poll for RSVP form
+  pollQuestion String?
+  pollOptions  Json?    // string[] up to 6 options
+
   rsvps     EventRsvp[]
   photos    EventPhoto[]
   reminders EventReminder[]
@@ -352,7 +362,14 @@ model Event {
   @@index([startsAt])
   @@index([shareToken])
   @@index([editToken])
+  @@index([repeatParentId])
   @@map("events")
+}
+
+enum RecurrenceCadence {
+  WEEKLY
+  MONTHLY
+  YEARLY
 }
 
 model EventRsvp {
@@ -368,6 +385,7 @@ model EventRsvp {
   status          RsvpStatus
   plusOnes        Int        @default(0)
   message         String?
+  pollAnswer      String?    // chosen option from Event.pollOptions
   cancelTokenHash String?    @unique
 
   @@unique([eventId, guestUserId])
