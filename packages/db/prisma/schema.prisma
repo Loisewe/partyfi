@@ -353,6 +353,10 @@ model Event {
   pollQuestion String?
   pollOptions  Json?    // string[] up to 6 options
 
+  // Optional intra-event agenda: array of { time, title, description? }
+  // Useful for lectures, courses, conferences, multi-band gigs.
+  agenda Json?
+
   rsvps     EventRsvp[]
   photos    EventPhoto[]
   reminders EventReminder[]

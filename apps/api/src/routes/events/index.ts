@@ -64,6 +64,7 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
         remindersEnabled: body.remindersEnabled,
         pollQuestion: body.pollQuestion ?? null,
         pollOptions: body.pollOptions ?? undefined,
+        agenda: body.agenda ?? undefined,
       },
       include: EVENT_INCLUDE,
     })
@@ -191,6 +192,7 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
     if (body.cancelMessage !== undefined)    data.cancelMessage = body.cancelMessage
     if (body.pollQuestion !== undefined)     data.pollQuestion = body.pollQuestion
     if (body.pollOptions !== undefined)      data.pollOptions = body.pollOptions
+    if (body.agenda !== undefined)           data.agenda = body.agenda
     if (body.pin !== undefined) {
       data.pinHash = body.pin ? await bcrypt.hash(body.pin, 10) : null
     }

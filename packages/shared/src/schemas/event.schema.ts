@@ -8,6 +8,15 @@ export const pollOptionsSchema = z
   .min(2, 'Минимум 2 варианта')
   .max(6, 'Максимум 6 вариантов')
 
+export const agendaItemSchema = z.object({
+  time: z.string().regex(/^\d{2}:\d{2}$/, 'Формат HH:MM').optional().nullable(),
+  title: z.string().min(1).max(120),
+  description: z.string().max(500).optional().nullable(),
+})
+
+export const agendaSchema = z.array(agendaItemSchema).max(30)
+export type AgendaItem = z.infer<typeof agendaItemSchema>
+
 export const createEventSchema = z.object({
   title: z.string().min(1, 'Название обязательно').max(120),
   description: z.string().max(2000).optional(),
@@ -26,6 +35,8 @@ export const createEventSchema = z.object({
   // Optional single-question poll
   pollQuestion: z.string().min(1).max(200).optional(),
   pollOptions: pollOptionsSchema.optional(),
+  // Optional agenda
+  agenda: agendaSchema.optional(),
 })
 
 export const updateEventSchema = createEventSchema.partial().extend({

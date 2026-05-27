@@ -72,6 +72,9 @@ export function formatPublicEvent(event: EventWithRelations): PublicEvent {
     pollOptions: Array.isArray((event as unknown as { pollOptions?: unknown }).pollOptions)
       ? ((event as unknown as { pollOptions: string[] }).pollOptions)
       : null,
+    agenda: Array.isArray((event as unknown as { agenda?: unknown }).agenda)
+      ? ((event as unknown as { agenda: PublicEvent['agenda'] }).agenda)
+      : null,
     createdAt: event.createdAt.toISOString(),
   }
 }

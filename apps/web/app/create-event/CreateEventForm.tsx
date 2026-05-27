@@ -9,6 +9,7 @@ import { eventsApi } from '@/lib/api-client'
 import { CoverPresetPicker } from '@/components/event/CoverPresetPicker'
 import { WishlistAttacher } from '@/components/event/WishlistAttacher'
 import { PollEditor } from '@/components/event/PollEditor'
+import { AgendaEditor } from '@/components/event/AgendaEditor'
 
 // Form schema uses datetime-local (no offset) — we convert to ISO+offset on submit
 const formSchema = z.object({
@@ -39,6 +40,7 @@ export function CreateEventForm() {
   const [wishlistId, setWishlistId] = useState<string | null>(null)
   const [pollQuestion, setPollQuestion] = useState('')
   const [pollOptions, setPollOptions] = useState<string[]>([])
+  const [agenda, setAgenda] = useState<Array<{ time?: string | null; title: string; description?: string | null }>>([])
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -67,6 +69,15 @@ export function CreateEventForm() {
           pollQuestion.trim() && pollOptions.filter((o) => o.trim()).length >= 2
             ? pollOptions.map((o) => o.trim()).filter(Boolean)
             : undefined,
+        agenda: agenda.filter((a) => a.title.trim().length > 0).length > 0
+          ? agenda
+              .filter((a) => a.title.trim().length > 0)
+              .map((a) => ({
+                time: a.time?.trim() || null,
+                title: a.title.trim(),
+                description: a.description?.trim() || null,
+              }))
+          : undefined,
       })
 
       if (result.editToken) {
@@ -163,6 +174,10 @@ export function CreateEventForm() {
           onQuestionChange={setPollQuestion}
           onOptionsChange={setPollOptions}
         />
+      </div>
+
+      <div>
+        <AgendaEditor items={agenda} onChange={setAgenda} />
       </div>
 
       <details className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 group">

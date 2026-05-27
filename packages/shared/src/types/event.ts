@@ -42,6 +42,8 @@ export interface PublicEvent {
   /** Optional single-question poll shown on RSVP form */
   pollQuestion: string | null
   pollOptions: string[] | null
+  /** Optional intra-event agenda (lectures, multi-band gigs, etc.) */
+  agenda: Array<{ time?: string | null; title: string; description?: string | null }> | null
   createdAt: string
 }
 

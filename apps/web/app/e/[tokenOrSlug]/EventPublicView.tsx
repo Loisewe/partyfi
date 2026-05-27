@@ -9,6 +9,9 @@ import { useEventStream } from '@/lib/use-event-stream'
 import { eventsApi } from '@/lib/api-client'
 import { CoverImage } from '@/components/event/CoverImage'
 import { PhotoWall } from '@/components/event/PhotoWall'
+import { MapEmbed } from '@/components/event/MapEmbed'
+import { AgendaTimeline } from '@/components/event/AgendaTimeline'
+import { WrappedCard } from '@/components/event/WrappedCard'
 import { Countdown } from '@/components/ui/Countdown'
 import { useToast } from '@/components/ui/Toast'
 
@@ -159,25 +162,28 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
         </div>
 
         {event.location && (
-          <div className="mt-3 rounded-2xl glass p-4 flex items-center gap-3 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-lg shrink-0">
-              📍
+          <div className="mt-3 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="rounded-2xl glass p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-lg shrink-0">
+                📍
+              </div>
+              <div className="min-w-0 flex-1">
+                {event.locationLink ? (
+                  <a
+                    href={event.locationLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-semibold text-ink-900 hover:text-brand-500 transition truncate block"
+                  >
+                    {event.location} <span className="text-xs">↗</span>
+                  </a>
+                ) : (
+                  <div className="text-sm font-semibold text-ink-900 truncate">{event.location}</div>
+                )}
+                <div className="text-xs text-ink-900/60">Место встречи</div>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              {event.locationLink ? (
-                <a
-                  href={event.locationLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-semibold text-ink-900 hover:text-brand-500 transition truncate block"
-                >
-                  {event.location} <span className="text-xs">↗</span>
-                </a>
-              ) : (
-                <div className="text-sm font-semibold text-ink-900 truncate">{event.location}</div>
-              )}
-              <div className="text-xs text-ink-900/60">Место встречи</div>
-            </div>
+            <MapEmbed location={event.location} locationLink={event.locationLink} />
           </div>
         )}
 
@@ -231,9 +237,26 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
           />
         </section>
 
+        {/* Agenda timeline (if event has one) */}
+        {event.agenda && event.agenda.length > 0 && (
+          <section className="mt-10 animate-slide-up" style={{ animationDelay: '0.43s' }}>
+            <AgendaTimeline items={event.agenda} />
+          </section>
+        )}
+
         {/* Photo wall */}
         <section className="mt-10 animate-slide-up" style={{ animationDelay: '0.45s' }}>
           <PhotoWall eventId={event.id} tokenOrSlug={tokenOrSlug} />
+        </section>
+
+        {/* Wrapped recap (only after event ended) */}
+        <section className="mt-10">
+          <WrappedCard
+            tokenOrSlug={tokenOrSlug}
+            eventTitle={event.title}
+            startsAt={event.startsAt}
+            endsAt={event.endsAt}
+          />
         </section>
 
         {/* Footer actions */}
