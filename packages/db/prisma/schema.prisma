@@ -42,6 +42,7 @@ model User {
   reservations Reservation[]
   hostedEvents Event[]      @relation("EventHost")
   guestRsvps   EventRsvp[]  @relation("GuestRsvps")
+  coHostOf     EventCoHost[] @relation("EventCoHostUser")
 
   @@unique([oauthProvider, oauthId])
   @@index([email])
@@ -357,6 +358,7 @@ model Event {
   reminders EventReminder[]
   upgrade   EventUpgrade?
   views     EventView[]
+  coHosts   EventCoHost[]
 
   @@index([hostUserId])
   @@index([startsAt])
@@ -364,6 +366,33 @@ model Event {
   @@index([editToken])
   @@index([repeatParentId])
   @@map("events")
+}
+
+// Second-admin per event. Has full edit-rights minus permanent ownership
+// transfer or co-host management itself (only primary host can add/remove
+// co-hosts).
+model EventCoHost {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  eventId   String
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User  @relation("EventCoHostUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  invitedBy String? // hostUserId at the time of invite, for audit
+  status    CoHostStatus @default(ACTIVE)
+  inviteToken String? @unique // null after accepted; until then, the shareable invite token
+
+  @@unique([eventId, userId])
+  @@index([userId])
+  @@map("event_co_hosts")
+}
+
+enum CoHostStatus {
+  PENDING  // invite created, not yet accepted
+  ACTIVE   // accepted, can edit
+  REVOKED  // host removed the co-host
 }
 
 enum RecurrenceCadence {

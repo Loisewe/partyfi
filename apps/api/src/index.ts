@@ -20,6 +20,8 @@ import { sseRoutes } from './routes/sse'
 import { eventRoutes } from './routes/events'
 import { eventCoverPresetRoutes } from './routes/event-cover-presets'
 import { eventPhotoRoutes, localUploadsRoute } from './routes/event-photos'
+import { eventCoHostRoutes } from './routes/event-co-hosts'
+import { eventAnalyticsRoutes } from './routes/event-analytics'
 import { paymentRoutes } from './routes/payments'
 import { startRemindersWorker } from './services/reminders.service'
 import { startAutoCloneWorker } from './services/auto-clone.service'
@@ -104,6 +106,8 @@ async function main() {
   await app.register(eventPhotoRoutes, { prefix: '/api/v1' })
   await app.register(localUploadsRoute)  // mounted at root for /uploads/*
   await app.register(paymentRoutes, { prefix: '/api/v1' })
+  await app.register(eventCoHostRoutes, { prefix: '/api/v1' })
+  await app.register(eventAnalyticsRoutes, { prefix: '/api/v1' })
 
   // ── Background workers ─────────────────────────────────────────────────────
   startRemindersWorker(app.prisma, app)

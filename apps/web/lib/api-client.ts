@@ -172,6 +172,66 @@ export const paymentsApi = {
   },
 }
 
+// ── Co-host API ─────────────────────────────────────────────────────────────
+
+export interface CoHostListItem {
+  id: string
+  status: 'PENDING' | 'ACTIVE' | 'REVOKED'
+  addedAt: string
+  user: { id: string; name: string | null; nickname: string; avatarUrl: string | null } | null
+  inviteToken: string | null
+}
+
+export interface CoHostInvitePreview {
+  eventTitle: string
+  eventStartsAt: string
+  hostName: string
+  coverPresetSlug: string | null
+}
+
+export const coHostsApi = {
+  async invite(eventId: string, editToken?: string): Promise<{ invite: { id: string; token: string; url: string } }> {
+    return requestWithHeaders(`/events/${eventId}/co-hosts`, 'POST', {}, buildEventHeaders({ editToken }))
+  },
+  async list(eventId: string, editToken?: string): Promise<{ coHosts: CoHostListItem[] }> {
+    return requestWithHeaders(`/events/${eventId}/co-hosts`, 'GET', undefined, buildEventHeaders({ editToken }))
+  },
+  async revoke(eventId: string, coHostId: string, editToken?: string): Promise<void> {
+    await requestWithHeaders(`/events/${eventId}/co-hosts/${coHostId}`, 'DELETE', undefined, buildEventHeaders({ editToken }))
+  },
+  async getInvite(token: string): Promise<{ preview: CoHostInvitePreview }> {
+    return api.get(`/co-host-invites/${token}`)
+  },
+  async acceptInvite(token: string): Promise<{ coHost: { id: string; eventId: string; eventTitle: string; status: string } }> {
+    return api.post(`/co-host-invites/${token}/accept`, {})
+  },
+}
+
+// ── Analytics API ───────────────────────────────────────────────────────────
+
+export interface EventAnalytics {
+  isPremium: boolean
+  isLimitedByFreeTier: boolean
+  summary: {
+    totalViews: number
+    uniqueViewers: number
+    totalRsvps: number
+    goingRsvps: number
+    plusOnesTotal: number
+    photoCount: number
+    conversionViewToRsvp: number
+  }
+  viewsByDay: Array<{ day: string; count: number }>
+  rsvpsByDay: Array<{ day: string; going: number; maybe: number; notGoing: number }>
+  pollBreakdown: Array<{ option: string; count: number }>
+}
+
+export const analyticsApi = {
+  async forEvent(eventId: string, editToken?: string): Promise<EventAnalytics> {
+    return requestWithHeaders(`/events/${eventId}/analytics`, 'GET', undefined, buildEventHeaders({ editToken }))
+  },
+}
+
 // ── Wishlists API (subset used for event attachment) ────────────────────────
 
 export interface OwnedWishlistSummary {

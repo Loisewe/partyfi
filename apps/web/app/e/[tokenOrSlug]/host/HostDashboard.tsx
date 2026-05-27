@@ -10,6 +10,8 @@ import { CustomSlugEditor } from '@/components/event/CustomSlugEditor'
 import { DuplicateEventButton } from '@/components/event/DuplicateEventButton'
 import { ShareToStoryButton } from '@/components/event/ShareToStoryButton'
 import { RecurrenceEditor } from '@/components/event/RecurrenceEditor'
+import { CoHostManager } from '@/components/event/CoHostManager'
+import { AnalyticsPanel } from '@/components/event/AnalyticsPanel'
 
 interface Props { tokenOrSlug: string }
 
@@ -130,6 +132,29 @@ export function HostDashboard({ tokenOrSlug }: Props) {
           <StatCard label="Может" value={event.rsvpStats.maybe} accent="text-amber-600" />
           <StatCard label="Не смогут" value={event.rsvpStats.notGoing} accent="text-ink-900/50" />
         </div>
+
+        {/* Analytics panel */}
+        <section className="mb-6">
+          <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+            <span>📊</span> Аналитика
+          </h2>
+          <AnalyticsPanel
+            eventId={event.id}
+            editToken={getStoredEditToken(event.id) ?? undefined}
+            pollQuestion={event.pollQuestion}
+          />
+        </section>
+
+        {/* Co-host management */}
+        <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+          <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+            <span>👥</span> Co-hosts
+          </h2>
+          <CoHostManager
+            eventId={event.id}
+            editToken={getStoredEditToken(event.id) ?? undefined}
+          />
+        </section>
 
         {/* Upgrade banner */}
         <section className="mb-6">
