@@ -1,0 +1,468 @@
+// Wishly — Database Schema
+// Price values are stored in minor units (cents/kopecks) as Int to avoid floating point issues.
+// e.g., $49.99 → 4999, ₽1490 → 149000
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USER
+// Unified table for anonymous + authenticated users.
+// Anonymous users have isAnonymous=true and a funny auto-generated nickname.
+// editToken stored in wishlist, not on user — user identity is their JWT or cookie.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Authenticated fields (null for anonymous)
+  email         String? @unique
+  name          String?
+  avatarUrl     String?
+  oauthProvider String? // "google" | "apple" | "telegram"
+  oauthId       String?
+
+  // Anonymous identity
+  nickname    String? // "Mysterious Alpaca" — auto-generated
+  isAnonymous Boolean @default(true)
+
+  // Telegram identity (Sprint 3 — added now to avoid second migration)
+  telegramId       String? @unique
+  telegramUsername String?
+
+  wishlists    Wishlist[]
+  reservations Reservation[]
+  hostedEvents Event[]      @relation("EventHost")
+  guestRsvps   EventRsvp[]  @relation("GuestRsvps")
+
+  @@unique([oauthProvider, oauthId])
+  @@index([email])
+  @@index([telegramId])
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WISHLIST
+// shareToken → public view URL: /w/[shareToken]
+// editToken  → owner edit URL:  /edit/[editToken]
+// Both are high-entropy random strings; editToken is the edit credential for anon users.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+  coverImage  String? // R2 CDN URL
+
+  // Access control
+  isPublic   Boolean @default(true)
+  shareToken String  @unique @default(cuid()) // for viewers: /w/[shareToken]
+  editToken  String  @unique @default(cuid()) // for owner:   /edit/[editToken]
+
+  // Owner
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  items  WishlistItem[]
+  events Event[]
+
+  @@index([shareToken])
+  @@index([editToken])
+  @@index([userId])
+  @@map("wishlists")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WISHLIST ITEM
+// Items added via URL (scraped) or manually.
+// position: integer for drag-and-drop ordering (lower = higher in list).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+
+  // Item details
+  name        String
+  description String?
+  imageUrl    String? // R2 CDN URL (our copy or proxied original)
+  price       Int?    // in minor units: $49.99 → 4999
+  currency    String? @default("USD")
+  sourceUrl   String? // original product URL
+
+  // Ordering
+  position Int @default(0)
+
+  // Scraping metadata
+  scrapedAt  DateTime?
+  scrapeStatus ScrapeStatus @default(NONE)
+  scrapeMeta Json?    // raw OG/JSON-LD data for debugging
+
+  reservation Reservation?
+
+  @@index([wishlistId])
+  @@index([wishlistId, position])
+  @@map("wishlist_items")
+}
+
+enum ScrapeStatus {
+  NONE     // added manually
+  PENDING  // scrape job queued
+  DONE     // scrape completed
+  FAILED   // scrape failed, manual fields remain
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESERVATION
+// Tracks who has reserved which item and under what conditions.
+//
+// visibilityMode:
+//   PUBLIC           → reserver name visible to everyone incl. wishlist owner
+//   HIDDEN_FROM_OWNER → name visible to other guests, hidden from owner
+//
+// cancelTokenHash: SHA-256 of the one-time cancelToken returned to anonymous reservers.
+// We store the hash, never the raw token — prevents server-side token theft.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Reservation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  itemId String       @unique
+  item   WishlistItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  type           ReservationType   @default(SOLO)
+  visibilityMode VisibilityMode    @default(HIDDEN_FROM_OWNER)
+  status         ReservationStatus @default(ACTIVE)
+
+  // Display name for anonymous reservers (authenticated users use user.name)
+  reserverDisplayName String?
+
+  // Group gifting
+  allowJoining Boolean @default(false)
+  message      String? // optional note for the recipient
+
+  // Anonymous cancellation token (hashed)
+  cancelTokenHash String? @unique
+
+  participants GroupGiftParticipant[]
+  kitty        Kitty?
+
+  @@index([itemId])
+  @@index([userId])
+  @@map("reservations")
+}
+
+enum ReservationType {
+  SOLO
+  GROUP
+}
+
+enum VisibilityMode {
+  PUBLIC
+  HIDDEN_FROM_OWNER
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GROUP GIFT PARTICIPANT
+// Friends who join a group gift reservation and pledge a contribution.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model GroupGiftParticipant {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  // Identity (can be anonymous — no FK required)
+  displayName String
+  email       String? // for payment notifications
+  telegramId  String?
+
+  // Contribution
+  pledgedAmount Int?    // intended contribution in minor units
+  isPaid        Boolean  @default(false)
+  paidAt        DateTime?
+
+  // Cancel their participation
+  cancelTokenHash String? @unique
+
+  @@index([reservationId])
+  @@map("group_gift_participants")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// KITTY
+// Fund collection pool for a group gift.
+// Created when organiser chooses "collect payments online" (Mode B).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Kitty {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reservationId String      @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+
+  targetAmount    Int        // total to collect (minor units)
+  collectedAmount Int        @default(0)
+  currency        String     @default("USD")
+  status          KittyStatus @default(OPEN)
+
+  // Payment provider references
+  stripePaymentIntentId String?
+  stripeAccountId       String? // Stripe Connect account of organiser
+  yookassaOrderId       String?
+
+  payments Payment[]
+
+  @@index([reservationId])
+  @@map("kitties")
+}
+
+enum KittyStatus {
+  OPEN
+  GOAL_REACHED
+  CLOSED
+  REFUNDED
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAYMENT
+// Individual payment record for a kitty contribution.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Payment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  kittyId String
+  kitty   Kitty  @relation(fields: [kittyId], references: [id])
+
+  // Payer identity
+  participantId String?
+  payerName     String?
+  payerEmail    String?
+
+  amount   Int    // minor units
+  currency String @default("USD")
+
+  status   PaymentStatus   @default(PENDING)
+  provider PaymentProvider
+
+  // Provider-specific IDs
+  externalId String? // Stripe payment intent, YooKassa payment ID
+  receiptUrl String?
+
+  @@index([kittyId])
+  @@index([externalId])
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  STRIPE
+  YOOKASSA
+  TINKOFF
+  REVOLUT
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENT
+// Casual event invitations with RSVP. Wishlist attachment is optional.
+// shareToken → public URL /e/[shareToken]
+// customSlug → premium-only pretty URL /e/[customSlug]
+// editToken  → anon host edit credential
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Event {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hostUserId String
+  host       User   @relation("EventHost", fields: [hostUserId], references: [id], onDelete: Cascade)
+  editToken  String @unique @default(cuid())
+
+  title         String
+  description   String?
+  startsAt      DateTime
+  endsAt        DateTime?
+  timezone      String   @default("Europe/Moscow")
+  location      String?
+  locationLink  String?
+
+  coverPresetId String?
+  coverPreset   EventCoverPreset? @relation(fields: [coverPresetId], references: [id])
+  coverImageUrl String?
+
+  shareToken String  @unique @default(cuid())
+  customSlug String? @unique
+  pinHash    String?
+
+  rsvpVisibility   RsvpVisibility @default(ALL_GUESTS)
+  remindersEnabled Boolean        @default(true)
+
+  wishlistId String?
+  wishlist   Wishlist? @relation(fields: [wishlistId], references: [id], onDelete: SetNull)
+
+  status        EventStatus @default(ACTIVE)
+  cancelMessage String?
+
+  rsvps     EventRsvp[]
+  photos    EventPhoto[]
+  reminders EventReminder[]
+  upgrade   EventUpgrade?
+  views     EventView[]
+
+  @@index([hostUserId])
+  @@index([startsAt])
+  @@index([shareToken])
+  @@index([editToken])
+  @@map("events")
+}
+
+model EventRsvp {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  eventId     String
+  event       Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guestUserId String
+  guest       User   @relation("GuestRsvps", fields: [guestUserId], references: [id])
+
+  status          RsvpStatus
+  plusOnes        Int        @default(0)
+  message         String?
+  cancelTokenHash String?    @unique
+
+  @@unique([eventId, guestUserId])
+  @@index([eventId, status])
+  @@map("event_rsvps")
+}
+
+model EventPhoto {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  eventId        String
+  event          Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  uploaderUserId String
+
+  r2Key     String
+  width     Int
+  height    Int
+  sizeBytes Int
+
+  @@index([eventId, createdAt])
+  @@map("event_photos")
+}
+
+model EventReminder {
+  id        String   @id @default(cuid())
+
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  triggerAt DateTime
+  kind      ReminderKind
+  sentAt    DateTime?
+
+  @@index([triggerAt, sentAt])
+  @@map("event_reminders")
+}
+
+model EventUpgrade {
+  id                String   @id @default(cuid())
+  createdAt         DateTime @default(now())
+
+  eventId           String   @unique
+  event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  purchaserUserId   String
+  starsAmount       Int
+  tgPaymentChargeId String   @unique
+  features          Json
+
+  @@map("event_upgrades")
+}
+
+model EventCoverPreset {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  imageUrl     String
+  occasionTags String[]
+  displayOrder Int      @default(0)
+
+  events Event[]
+
+  @@map("event_cover_presets")
+}
+
+model EventView {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  eventId    String
+  event      Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  viewerHash String
+
+  @@unique([eventId, viewerHash])
+  @@index([eventId, createdAt])
+  @@map("event_views")
+}
+
+enum RsvpVisibility {
+  ALL_GUESTS
+  HOST_ONLY
+}
+
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+  ARCHIVED
+}
+
+enum RsvpStatus {
+  GOING
+  MAYBE
+  NOT_GOING
+}
+
+enum ReminderKind {
+  T_24H
+  T_2H
+  CUSTOM
+}

@@ -1,0 +1,44 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+.next
+.turbo
+build
+out
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# Prisma
+prisma/migrations/.migration_lock.toml
+
+# Uploads (local dev)
+uploads/
+local-uploads/
+
+# Next.js
+.next/
+next-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc dev artifacts
+.pnpm-debug.log
+*.local

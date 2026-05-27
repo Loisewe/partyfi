@@ -1,0 +1,20 @@
+{
+  "name": "@wishly/bot",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@wishly/shared": "workspace:*",
+    "dotenv": "^16.4.5",
+    "grammy": "^1.31.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.1",
+    "tsx": "^4.22.3",
+    "typescript": "^5.6.3"
+  }
+}

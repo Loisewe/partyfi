@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "target": "ES2022",
+    "outDir": "dist",
+    "rootDir": "src",
+    "noEmit": true,
+    "paths": {
+      "@prisma/client": ["../../packages/db/node_modules/.prisma/client"]
+    }
+  },
+  "include": ["src"]
+}

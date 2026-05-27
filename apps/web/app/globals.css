@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-white text-ink-900;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  /* Display utility for headlines */
+  h1, h2, h3, .display {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  /* Glass card — premium translucent surface */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl backdrop-saturate-150 border border-white/40;
+  }
+  .glass-dark {
+    @apply bg-ink-900/60 backdrop-blur-xl backdrop-saturate-150 border border-white/10;
+  }
+
+  /* Hero blob — large soft gradient blob for backgrounds */
+  .hero-blob {
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 95, 160, 0.4) 0%,
+      rgba(251, 146, 60, 0.25) 35%,
+      rgba(255, 255, 255, 0) 70%
+    );
+    filter: blur(40px);
+  }
+
+  /* Shimmer loading skeleton */
+  .skeleton {
+    @apply bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 bg-[length:200%_100%] animate-shimmer rounded-lg;
+  }
+
+  /* Pill button (modern + tactile) */
+  .pill {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-95;
+  }
+  .pill-primary {
+    @apply pill bg-ink-900 text-white shadow-soft hover:shadow-lifted hover:-translate-y-0.5;
+  }
+  .pill-secondary {
+    @apply pill bg-white text-ink-900 border border-gray-200 hover:border-ink-900 hover:bg-gray-50;
+  }
+  .pill-brand {
+    @apply pill bg-gradient-celebratory text-white shadow-soft hover:shadow-lifted hover:-translate-y-0.5;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text balance — better line breaks for headlines */
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Selection style */
+  ::selection {
+    background-color: #ff2d7b;
+    color: white;
+  }
+}
+
+/* Stagger children with CSS — apply .stagger-parent and children animate in sequence */
+.stagger-parent > * {
+  animation: stagger 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+.stagger-parent > *:nth-child(1) { animation-delay: 0.05s }
+.stagger-parent > *:nth-child(2) { animation-delay: 0.10s }
+.stagger-parent > *:nth-child(3) { animation-delay: 0.15s }
+.stagger-parent > *:nth-child(4) { animation-delay: 0.20s }
+.stagger-parent > *:nth-child(5) { animation-delay: 0.25s }
+.stagger-parent > *:nth-child(6) { animation-delay: 0.30s }
+.stagger-parent > *:nth-child(n+7) { animation-delay: 0.35s }

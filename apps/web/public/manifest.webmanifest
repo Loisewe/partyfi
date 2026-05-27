@@ -1,0 +1,19 @@
+{
+  "name": "Wishly",
+  "short_name": "Wishly",
+  "description": "Вишлисты и ивенты с RSVP — собирай гостей и подарки в одном месте",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff2d7b",
+  "lang": "ru",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
