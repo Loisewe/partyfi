@@ -164,6 +164,31 @@ export const eventsApi = {
   },
 }
 
+// ── Discover API (public feed) ──────────────────────────────────────────────
+
+export interface DiscoverItem {
+  slug: string
+  title: string
+  startsAt: string
+  endsAt: string | null
+  coverImageUrl: string | null
+  coverPresetSlug: string | null
+  themeColor: 'rose' | 'violet' | 'emerald' | 'amber' | 'sky' | 'slate' | null
+  city: string | null
+  hostName: string
+  goingCount: number
+}
+
+export const discoverApi = {
+  async list(params?: { city?: string; cursor?: string }): Promise<{ items: DiscoverItem[]; nextCursor: string | null }> {
+    const q = new URLSearchParams()
+    if (params?.city) q.set('city', params.city)
+    if (params?.cursor) q.set('cursor', params.cursor)
+    const qs = q.toString()
+    return api.get(`/discover${qs ? '?' + qs : ''}`)
+  },
+}
+
 // ── Payments API ────────────────────────────────────────────────────────────
 
 export const paymentsApi = {

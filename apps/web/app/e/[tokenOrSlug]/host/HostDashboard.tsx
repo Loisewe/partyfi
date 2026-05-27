@@ -14,6 +14,7 @@ import { CoHostManager } from '@/components/event/CoHostManager'
 import { AnalyticsPanel } from '@/components/event/AnalyticsPanel'
 import { ThemeColorPicker } from '@/components/event/ThemeColorPicker'
 import { EmbedCodeBox } from '@/components/event/EmbedCodeBox'
+import { DiscoverToggle } from '@/components/event/DiscoverToggle'
 import { ExternalLinksHostEditor } from '@/components/event/ExternalLinksHostEditor'
 
 interface Props { tokenOrSlug: string }
@@ -193,6 +194,14 @@ export function HostDashboard({ tokenOrSlug }: Props) {
             </section>
           </>
         )}
+
+        {/* Public discover toggle */}
+        <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">
+          <h2 className="font-display text-lg font-bold text-ink-900 mb-3 flex items-center gap-2">
+            <span>🌍</span> Открытый каталог
+          </h2>
+          <DiscoverToggle event={event} onUpdated={load} />
+        </section>
 
         {/* Embed code for blogs / sites */}
         <section className="mb-6 rounded-3xl bg-white border border-gray-100 shadow-soft p-5 sm:p-6">

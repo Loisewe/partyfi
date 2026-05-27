@@ -365,6 +365,13 @@ model Event {
   // Free tier: max 3 links. Premium tier: max 10 (enforced server-side).
   externalLinks Json?
 
+  // Opt-in: shown in /discover feed (only if status=ACTIVE и startsAt > now).
+  // Host toggle. Off by default to protect privacy.
+  isDiscoverable Boolean @default(false)
+
+  // City for /discover filter (denormalized from location text by host).
+  discoveryCity String?
+
   rsvps     EventRsvp[]
   photos    EventPhoto[]
   reminders EventReminder[]
@@ -428,6 +435,8 @@ model EventRsvp {
   message         String?
   pollAnswer      String?    // chosen option from Event.pollOptions
   cancelTokenHash String?    @unique
+  // Live mode: when guest checked-in during the event window
+  arrivedAt       DateTime?
 
   @@unique([eventId, guestUserId])
   @@index([eventId, status])

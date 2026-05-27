@@ -20,6 +20,7 @@ import { sseRoutes } from './routes/sse'
 import { eventRoutes } from './routes/events'
 import { eventCoverPresetRoutes } from './routes/event-cover-presets'
 import { clientErrorRoutes } from './routes/_client-error'
+import { eventDiscoverRoutes } from './routes/event-discover'
 import { eventPhotoRoutes, localUploadsRoute } from './routes/event-photos'
 import { eventCoHostRoutes } from './routes/event-co-hosts'
 import { eventAnalyticsRoutes } from './routes/event-analytics'
@@ -110,6 +111,7 @@ async function main() {
   await app.register(eventCoHostRoutes, { prefix: '/api/v1' })
   await app.register(eventAnalyticsRoutes, { prefix: '/api/v1' })
   await app.register(clientErrorRoutes, { prefix: '/api/v1' })
+  await app.register(eventDiscoverRoutes, { prefix: '/api/v1' })
 
   // ── Background workers ─────────────────────────────────────────────────────
   startRemindersWorker(app.prisma, app)

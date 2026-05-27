@@ -226,6 +226,8 @@ export const eventRoutes: FastifyPluginAsync = async (app) => {
       }
       data.externalLinks = body.externalLinks
     }
+    if (body.isDiscoverable !== undefined) data.isDiscoverable = body.isDiscoverable
+    if (body.discoveryCity !== undefined)  data.discoveryCity = body.discoveryCity
     if (body.pin !== undefined) {
       data.pinHash = body.pin ? await bcrypt.hash(body.pin, 10) : null
     }

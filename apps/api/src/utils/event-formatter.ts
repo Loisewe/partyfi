@@ -79,6 +79,8 @@ export function formatPublicEvent(event: EventWithRelations): PublicEvent {
     externalLinks: Array.isArray((event as unknown as { externalLinks?: unknown }).externalLinks)
       ? ((event as unknown as { externalLinks: PublicEvent['externalLinks'] }).externalLinks)
       : null,
+    isDiscoverable: (event as unknown as { isDiscoverable?: boolean }).isDiscoverable ?? false,
+    discoveryCity: (event as unknown as { discoveryCity?: string | null }).discoveryCity ?? null,
     createdAt: event.createdAt.toISOString(),
   }
 }

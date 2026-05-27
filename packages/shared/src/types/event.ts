@@ -48,6 +48,10 @@ export interface PublicEvent {
   themeColor: 'rose' | 'violet' | 'emerald' | 'amber' | 'sky' | 'slate' | null
   /** band.link-style external links shown as module on event page */
   externalLinks: Array<{ emoji?: string | null; title: string; url: string }> | null
+  /** Opt-in to public /discover feed */
+  isDiscoverable: boolean
+  /** City label shown in discover (denormalized) */
+  discoveryCity: string | null
   createdAt: string
 }
 

@@ -61,6 +61,9 @@ export const createEventSchema = z.object({
   themeColor: themeColorSchema.nullable().optional(),
   // band.link-style external links — free 3, premium 10
   externalLinks: externalLinksSchema.optional(),
+  // Discover feed opt-in (off by default)
+  isDiscoverable: z.boolean().optional(),
+  discoveryCity: z.string().max(80).nullable().optional(),
 })
 
 export const updateEventSchema = createEventSchema.partial().extend({
