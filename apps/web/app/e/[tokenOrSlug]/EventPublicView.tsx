@@ -10,6 +10,8 @@ import { eventsApi } from '@/lib/api-client'
 import { CoverImage } from '@/components/event/CoverImage'
 import { themeStyles } from '@/lib/event-theme'
 import { ExternalLinksList } from '@/components/event/ExternalLinksList'
+import { LiveBanner } from '@/components/event/LiveBanner'
+import { StickyRsvpBar } from '@/components/event/StickyRsvpBar'
 import { PhotoWall } from '@/components/event/PhotoWall'
 import { MapEmbed } from '@/components/event/MapEmbed'
 import { AgendaTimeline } from '@/components/event/AgendaTimeline'
@@ -119,6 +121,9 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[600px] hero-blob pointer-events-none" aria-hidden />
 
       <div className="relative container mx-auto max-w-2xl px-4 pt-6 sm:pt-10">
+        {/* Live / countdown / finished banner */}
+        <LiveBanner startsAt={event.startsAt} endsAt={event.endsAt} />
+
         {/* Hero cover */}
         <div className="relative animate-slide-up">
           <CoverImage
@@ -227,7 +232,11 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
         )}
 
         {/* RSVP form */}
-        <section className="mt-8 rounded-3xl bg-white border border-gray-100 p-5 sm:p-7 shadow-soft animate-slide-up" style={{ animationDelay: '0.35s' }}>
+        <section
+          id="rsvp-section"
+          className="mt-8 rounded-3xl bg-white border border-gray-100 p-5 sm:p-7 shadow-soft animate-slide-up"
+          style={{ animationDelay: '0.35s' }}
+        >
           <RsvpForm
             tokenOrSlug={tokenOrSlug}
             pin={pin}
@@ -299,6 +308,14 @@ export function EventPublicView({ initialData, tokenOrSlug }: Props) {
           </a>
         </p>
       </div>
+
+      <StickyRsvpBar
+        hasRsvpd={false}
+        onScrollToRsvp={() => {
+          const el = document.getElementById('rsvp-section')
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }}
+      />
     </main>
   )
 }
