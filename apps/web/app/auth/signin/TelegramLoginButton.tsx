@@ -77,22 +77,32 @@ export function TelegramLoginButton({ botName }: { botName: string }) {
     return () => { delete window.onTelegramAuth }
   }, [router, search])
 
-  // Inject the official TG widget script. data-onauth points to global handler.
+  // Inject the official TG widget script. Use data-auth-url for reliability —
+  // TG will redirect to our callback page with signed query params instead of
+  // calling a JS callback (which can race with React lifecycle).
   useEffect(() => {
-    if (!containerRef.current) return
+    const container = containerRef.current
+    if (!container) return
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const callbackPath = search.get('callbackUrl') ?? '/dashboard'
+    const authUrl = `${origin}/auth/telegram-callback?callbackUrl=${encodeURIComponent(callbackPath)}`
+
+    // Clear any previously-rendered widget iframes (HMR / Strict Mode safety)
+    container.innerHTML = ''
+
     const script = document.createElement('script')
     script.async = true
-    script.src = 'https://telegram.org/js/telegram-widget.js?22'
+    script.src = `https://telegram.org/js/telegram-widget.js?22&_t=${Date.now()}`
     script.setAttribute('data-telegram-login', botName)
     script.setAttribute('data-size', 'large')
     script.setAttribute('data-radius', '20')
     script.setAttribute('data-request-access', 'write')
-    script.setAttribute('data-onauth', 'onTelegramAuth(user)')
-    containerRef.current.appendChild(script)
+    script.setAttribute('data-auth-url', authUrl)
+    container.appendChild(script)
     return () => {
-      try { script.remove() } catch { /* noop */ }
+      try { container.innerHTML = '' } catch { /* noop */ }
     }
-  }, [botName])
+  }, [botName, search])
 
   return (
     <div className="space-y-3">

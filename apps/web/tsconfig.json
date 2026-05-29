@@ -20,9 +20,6 @@
     "paths": {
       "@/*": [
         "./*"
-      ],
-      "@prisma/client": [
-        "../../packages/db/node_modules/.prisma/client"
       ]
     },
     "allowJs": true,

@@ -43,6 +43,8 @@ model User {
   hostedEvents Event[]      @relation("EventHost")
   guestRsvps   EventRsvp[]  @relation("GuestRsvps")
   coHostOf     EventCoHost[] @relation("EventCoHostUser")
+  ownedOrgs    Organization[] @relation("OrgOwner")
+  orgMemberships OrganizationMember[]
 
   @@unique([oauthProvider, oauthId])
   @@index([email])
@@ -372,6 +374,13 @@ model Event {
   // City for /discover filter (denormalized from location text by host).
   discoveryCity String?
 
+  // ── Organization context (B2B) ─────────────────────────────────────────
+  // When set, the event belongs to an Organization (promo team, lecturer,
+  // conference org). The org's brand kit + subscription apply automatically.
+  // Personal events keep organizationId = null.
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
   rsvps     EventRsvp[]
   photos    EventPhoto[]
   reminders EventReminder[]
@@ -384,7 +393,111 @@ model Event {
   @@index([shareToken])
   @@index([editToken])
   @@index([repeatParentId])
+  @@index([organizationId])
   @@map("events")
+}
+
+// ── B2B layer: Organization = ивент-команда (промо, лектор, конференц-орг) ─
+// Owns многие ивенты под единым брендом + URL префиксом + subscription
+// (monthly TG Stars). Members имеют ролы для editing/viewing.
+model Organization {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  slug        String   @unique  // lowercase, [a-z0-9-]{3,32}, public URL /o/{slug}
+  name        String              // display, e.g. "Disco Club Moscow"
+  tagline     String?             // short subtitle
+  description String?             // long blurb shown on public page
+
+  // Brand kit
+  logoUrl       String?
+  brandColor    String?           // primary brand color hex (e.g. #ff2d7b)
+  accentColor   String?           // secondary accent hex
+  fontFamily    String?           // 'system' | 'serif' | 'mono' | custom slug
+  coverImageUrl String?           // header banner on public page
+
+  // Contact / social
+  websiteUrl     String?
+  telegramHandle String?           // public @handle for inquiries
+  instagramHandle String?
+  contactEmail   String?
+
+  // Ownership + plan
+  ownerUserId String
+  owner       User    @relation("OrgOwner", fields: [ownerUserId], references: [id], onDelete: Restrict)
+
+  // Discovery
+  isPublic       Boolean @default(true)   // appear in /discover/orgs
+  city           String?
+
+  members       OrganizationMember[]
+  events        Event[]
+  subscription  OrganizationSubscription?
+
+  @@index([ownerUserId])
+  @@index([slug])
+  @@index([city])
+  @@map("organizations")
+}
+
+enum OrgMemberRole {
+  OWNER       // primary, has all rights including delete-org + billing
+  ADMIN       // can manage members, brand, all events
+  EDITOR      // can create + edit events, no member mgmt
+  VIEWER      // read-only access (analytics, lists)
+}
+
+model OrganizationMember {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role           OrgMemberRole @default(EDITOR)
+  invitedBy      String?         // userId of inviter
+  invitedAt      DateTime @default(now())
+  acceptedAt     DateTime?
+
+  // Pending invite via shareable link (null userId allowed for non-existing users?
+  // No — we require existing User; we just keep acceptedAt nullable for pending invites)
+  inviteToken    String? @unique
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@map("organization_members")
+}
+
+enum OrgPlan {
+  FREE        // 3 ивента в активном состоянии, базовые фичи
+  PRO         // безлимит ивентов, brand kit, аналитика, embed без footer
+  STUDIO      // PRO + multi-team, API access, white-label, custom domain (later)
+}
+
+model OrganizationSubscription {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String   @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  plan           OrgPlan @default(FREE)
+  startedAt      DateTime @default(now())
+  // Monthly billing — renewedAt updated on each successful_payment from TG Stars
+  renewedAt      DateTime @default(now())
+  expiresAt      DateTime?  // null = open-ended FREE / lifetime promo
+  cancelledAt    DateTime?
+
+  // Last TG Stars payment for audit
+  lastTgPaymentChargeId String?
+  lastStarsAmount       Int?
+
+  @@index([plan, expiresAt])
+  @@map("organization_subscriptions")
 }
 
 // Second-admin per event. Has full edit-rights minus permanent ownership

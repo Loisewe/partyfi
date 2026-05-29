@@ -21,6 +21,7 @@ import { eventRoutes } from './routes/events'
 import { eventCoverPresetRoutes } from './routes/event-cover-presets'
 import { clientErrorRoutes } from './routes/_client-error'
 import { eventDiscoverRoutes } from './routes/event-discover'
+import { organizationRoutes } from './routes/organizations'
 import { eventPhotoRoutes, localUploadsRoute } from './routes/event-photos'
 import { eventCoHostRoutes } from './routes/event-co-hosts'
 import { eventAnalyticsRoutes } from './routes/event-analytics'
@@ -50,12 +51,25 @@ const app = Fastify({
 async function main() {
   // ── Plugins ──────────────────────────────────────────────────────────────
 
-  await app.register(cors, {
-    origin: [
+  // CORS: allow main WEB_URL, TG Mini App origin, localhost dev,
+  // and any ngrok tunnel in dev. Function-based to support wildcard match.
+  const staticAllowed = new Set(
+    [
       process.env.WEB_URL ?? 'http://localhost:3000',
-      // Telegram Mini App origin — set in env for production
       process.env.TELEGRAM_MINI_APP_URL ?? '',
+      'http://localhost:3000',
     ].filter(Boolean),
+  )
+  await app.register(cors, {
+    origin(origin, cb) {
+      if (!origin) return cb(null, true)  // server-to-server / curl
+      if (staticAllowed.has(origin)) return cb(null, true)
+      // Dev: allow ngrok tunnels (.ngrok-free.dev / .ngrok-free.app / .ngrok.io)
+      if (/^https?:\/\/[a-z0-9-]+\.ngrok(-free)?\.(dev|app|io)$/i.test(origin)) {
+        return cb(null, true)
+      }
+      cb(new Error(`CORS blocked: ${origin}`), false)
+    },
     credentials: true,
   })
 
@@ -112,6 +126,7 @@ async function main() {
   await app.register(eventAnalyticsRoutes, { prefix: '/api/v1' })
   await app.register(clientErrorRoutes, { prefix: '/api/v1' })
   await app.register(eventDiscoverRoutes, { prefix: '/api/v1' })
+  await app.register(organizationRoutes, { prefix: '/api/v1/organizations' })
 
   // ── Background workers ─────────────────────────────────────────────────────
   startRemindersWorker(app.prisma, app)
