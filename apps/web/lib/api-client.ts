@@ -189,6 +189,91 @@ export const discoverApi = {
   },
 }
 
+// ── Organizations API ───────────────────────────────────────────────────────
+
+export interface OrgSummary {
+  id: string
+  slug: string
+  name: string
+  tagline: string | null
+  description: string | null
+  logoUrl: string | null
+  coverImageUrl: string | null
+  brandColor: string | null
+  accentColor: string | null
+  fontFamily: string | null
+  websiteUrl: string | null
+  telegramHandle: string | null
+  instagramHandle: string | null
+  contactEmail: string | null
+  isPublic: boolean
+  city: string | null
+  ownerUserId: string
+  plan: 'FREE' | 'PRO' | 'STUDIO'
+  planExpiresAt: string | null
+  createdAt: string
+}
+
+export interface OrgWithRole extends OrgSummary {
+  role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+}
+
+export interface OrgMember {
+  id: string
+  role: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'
+  user: { id: string; name: string | null; nickname: string; avatarUrl: string | null }
+  invitedAt: string
+  acceptedAt: string | null
+  inviteToken: string | null
+}
+
+export interface OrgEvent {
+  id: string
+  title: string
+  shareToken: string
+  customSlug: string | null
+  startsAt: string
+  endsAt: string | null
+  location: string | null
+  coverImageUrl: string | null
+  themeColor: string | null
+  isPremium: boolean
+  rsvpStats: { going: number; plusOnesTotal: number }
+}
+
+export const orgsApi = {
+  async create(input: { slug: string; name: string; tagline?: string; description?: string }): Promise<{ organization: OrgSummary }> {
+    return api.post('/organizations', input)
+  },
+  async mine(): Promise<{ organizations: OrgWithRole[] }> {
+    return api.get('/organizations/mine')
+  },
+  async get(slug: string): Promise<{ organization: OrgSummary; owner: { name: string | null; avatarUrl: string | null }; callerRole: 'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER' | null }> {
+    return api.get(`/organizations/${slug}`)
+  },
+  async update(id: string, input: Partial<OrgSummary>): Promise<{ organization: OrgSummary }> {
+    return api.patch(`/organizations/${id}`, input)
+  },
+  async events(slug: string, tense: 'upcoming' | 'past' = 'upcoming'): Promise<{ events: OrgEvent[] }> {
+    return api.get(`/organizations/${slug}/events?tense=${tense}`)
+  },
+  async members(id: string): Promise<{ members: OrgMember[] }> {
+    return api.get(`/organizations/${id}/members`)
+  },
+  async inviteMember(id: string, input: { role: 'ADMIN' | 'EDITOR' | 'VIEWER'; userId?: string }): Promise<{ member?: { id: string; role: string }; invite?: { id: string; token: string; url: string } }> {
+    return api.post(`/organizations/${id}/members`, input)
+  },
+  async acceptInvite(token: string): Promise<{ member: { id: string; role: string }; org: { slug: string; name: string } }> {
+    return api.post(`/organizations/invites/${token}/accept`, {})
+  },
+  async removeMember(orgId: string, memberId: string): Promise<void> {
+    await api.delete(`/organizations/${orgId}/members/${memberId}`)
+  },
+  async updateMemberRole(orgId: string, memberId: string, role: 'ADMIN' | 'EDITOR' | 'VIEWER'): Promise<void> {
+    await api.patch(`/organizations/${orgId}/members/${memberId}`, { role })
+  },
+}
+
 // ── Payments API ────────────────────────────────────────────────────────────
 
 export const paymentsApi = {
