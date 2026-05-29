@@ -15,14 +15,14 @@ export default function LandingPage() {
         <div className="relative container mx-auto max-w-5xl px-6 pt-16 pb-24 sm:pt-24 sm:pb-32 text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-white shadow-soft px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-brand-500 mb-8 animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse-ring" />
-            Без регистрации · Бесплатно
+            Для промо-команд · лекторов · конференц-организаторов
           </div>
 
           <h1 className="font-display text-display-xl text-balance text-ink-900 max-w-4xl mx-auto animate-slide-up">
-            Собирай гостей{' '}
+            Афиша ивентов{' '}
             <span className="relative inline-block">
               <span className="relative z-10 bg-gradient-celebratory bg-clip-text text-transparent">
-                и подарки
+                под твоим брендом
               </span>
               <svg
                 className="absolute -bottom-2 left-0 w-full h-3 text-brand-200"
@@ -33,22 +33,27 @@ export default function LandingPage() {
                 <path d="M0 4 Q 25 1 50 4 T 100 4" stroke="currentColor" strokeWidth="2" fill="none" />
               </svg>
             </span>
-            <br />в одном месте
+            <br />за один тап
           </h1>
 
           <p className="mt-8 max-w-2xl mx-auto text-lg sm:text-xl text-ink-900/60 text-pretty animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            Создай ивент за минуту: дата, место, вишлист. Гости RSVP-ят в один тап,
-            хост видит счёт онлайн, всё через Telegram.
+            Промо-вечеринки, концерты, конференции, курсы лекций — всё под одним брендом
+            на одной странице. RSVP, продажа билетов, фото, бренд-кит. Без сайтов, без сторонних SaaS.
           </p>
 
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 animate-slide-up" style={{ animationDelay: '0.2s' }}>
             <Link
-              href="/create-event"
+              href="/orgs/new"
               className="pill-brand text-base px-7 py-3.5"
             >
-              🎉 Создать ивент
+              🏢 Создать организацию
             </Link>
-            <CreateWishlistButton />
+            <Link
+              href="/create-event"
+              className="pill bg-white border-2 border-ink-900/10 hover:border-ink-900/30 text-base px-7 py-3.5 text-ink-900"
+            >
+              🎉 Просто один ивент
+            </Link>
             <Link
               href="#how-it-works"
               className="text-sm font-medium text-ink-900/50 hover:text-ink-900 transition px-3 py-3"
